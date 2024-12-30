@@ -44,9 +44,9 @@ func (ct *containerEmbed) drawChild(screen *ebiten.Image, child *child) {
 
 func (ct *containerEmbed) computeBounds(child *child) image.Rectangle {
 	if child.absolute {
-		return child.bounds
+		return scaleFrame(child.bounds)
 	}
-	return child.bounds.Add(ct.frame.Min)
+	return scaleFrame(child.bounds.Add(ct.frame.Min))
 }
 
 func (ct *containerEmbed) handleDraw(screen *ebiten.Image, b image.Rectangle, child *child) {
@@ -274,11 +274,12 @@ func (ct *containerEmbed) setFrame(frame image.Rectangle) {
 }
 
 func (ct *containerEmbed) childFrame(c *child) *image.Rectangle {
-	if !c.absolute {
-		r := c.bounds.Add(ct.frame.Min)
-		return &r
+	if c.absolute {
+		bounds := scaleFrame(c.bounds)
+		return &bounds
 	}
-	return &c.bounds
+	bounds := scaleFrame(c.bounds.Add(ct.frame.Min))
+	return &bounds
 }
 
 type touchPosition struct {
@@ -299,4 +300,13 @@ func lastTouchPosition(t ebiten.TouchID) *touchPosition {
 		return &s
 	}
 	return &touchPosition{0, 0}
+}
+
+func scaleFrame(frame image.Rectangle) image.Rectangle {
+	return image.Rect(
+		int(float64(frame.Min.X)*GlobalScale),
+		int(float64(frame.Min.Y)*GlobalScale),
+		int(float64(frame.Max.X)*GlobalScale),
+		int(float64(frame.Max.Y)*GlobalScale),
+	)
 }

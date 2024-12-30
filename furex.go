@@ -9,6 +9,7 @@ import (
 
 var (
 	Debug           = false
+	GlobalScale     = 1.0
 	debugColor      = color.RGBA{0xff, 0, 0, 0xff}
 	debugColorShift = ebiten.ColorM{}
 )
@@ -25,7 +26,7 @@ func debugBorders(screen *ebiten.Image, root containerEmbed) {
 			queue = queue[1:]
 
 			graphic.DrawRect(screen, &graphic.DrawRectOpts{
-				Rect:        curr.frame,
+				Rect:        scaleFrame(curr.frame),
 				Color:       renderColor,
 				StrokeWidth: 2,
 			})

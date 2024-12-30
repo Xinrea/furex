@@ -122,7 +122,8 @@ func (v *View) Draw(screen *ebiten.Image) {
 		v.startLayout()
 	}
 	if !v.hasParent {
-		v.handleDrawRoot(screen, v.frame)
+		// scale frame with GlobalScale
+		v.handleDrawRoot(screen, scaleFrame(v.frame))
 	}
 	if !v.Hidden && v.Display != DisplayNone {
 		v.containerEmbed.Draw(screen)

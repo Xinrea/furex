@@ -78,10 +78,10 @@ type MouseLeftButtonHandler interface {
 	// HandleJustPressedMouseButtonLeft handle left mouse button click just pressed.
 	// The parameter (x, y) is the location relative to the window (0,0).
 	// It returns true if it handles the mouse move.
-	HandleJustPressedMouseButtonLeft(x, y int) bool
+	HandleJustPressedMouseButtonLeft(frame image.Rectangle, x, y int) bool
 	// HandleJustReleasedTouchID handles the touchID just released.
 	// The parameter (x, y) is the location relative to the window (0,0).
-	HandleJustReleasedMouseButtonLeft(x, y int)
+	HandleJustReleasedMouseButtonLeft(frame image.Rectangle, x, y int)
 }
 
 // MouseEnterHandler represets a component that handle mouse enter.

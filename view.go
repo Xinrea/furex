@@ -218,7 +218,7 @@ func (v *View) height() int {
 	return v.Height
 }
 
-func (v *View) getChildren() []*View {
+func (v *View) GetChildren() []*View {
 	if v == nil || v.children == nil {
 		return nil
 	}
@@ -227,6 +227,13 @@ func (v *View) getChildren() []*View {
 		ret[i] = child.item
 	}
 	return ret
+}
+
+func (v *View) NthChild(n int) *View {
+	if n < 0 || n >= len(v.children) {
+		return nil
+	}
+	return v.children[n].item
 }
 
 // GetByID returns the view with the specified id.
@@ -251,6 +258,18 @@ func (v *View) MustGetByID(id string) *View {
 		panic("view not found")
 	}
 	return vv
+}
+
+// FilterByTagName returns views with the specified tag name.
+func (v *View) FilterByTagName(tagName string) []*View {
+	var views []*View
+	if v.TagName == tagName {
+		views = append(views, v)
+	}
+	for _, child := range v.children {
+		views = append(views, child.item.FilterByTagName(tagName)...)
+	}
+	return views
 }
 
 // SetLeft sets the left position of the view.
@@ -397,7 +416,7 @@ func (v *View) Config() ViewConfig {
 		Shrink:       v.Shrink,
 		children:     []ViewConfig{},
 	}
-	for _, child := range v.getChildren() {
+	for _, child := range v.GetChildren() {
 		cfg.children = append(cfg.children, child.Config())
 	}
 	return cfg

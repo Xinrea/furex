@@ -14,14 +14,14 @@ import (
 func TestHandlers(t *testing.T) {
 	// test scenarios
 	scenarios := make(map[string]func(t *testing.T, flex *View, h *mockHandler, frame image.Rectangle))
-	// "button touch": testButtonTouch,
-	// "mouse click":  testMouchClick,
-	// "mouse move":   testMouseMove,
+	// scenarios["button touch"] = testButtonTouch
+	// scenarios["mouse click"] = testMouchClick
+	// scenarios["mouse move"] = testMouseMove
 	scenarios["swipe"] = testSwipe
 	for scenario, fn := range scenarios {
 		t.Run(scenario, func(t *testing.T) {
 			flex := &View{
-				Attrs: ElementAttributes{
+				Attrs: ViewAttrs{
 					Width:      300,
 					Height:     500,
 					Left:       100,
@@ -34,7 +34,7 @@ func TestHandlers(t *testing.T) {
 			}
 
 			flex2 := &View{
-				Attrs: ElementAttributes{
+				Attrs: ViewAttrs{
 					Width:      100,
 					Height:     200,
 					Direction:  Column,
@@ -47,7 +47,7 @@ func TestHandlers(t *testing.T) {
 
 			h := NewMockHandler()
 			flex2.AddChild(&View{
-				Attrs: ElementAttributes{
+				Attrs: ViewAttrs{
 					Width:  10,
 					Height: 20,
 				},

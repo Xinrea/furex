@@ -9,7 +9,7 @@ import (
 
 func TestAddChildUpdateRemove(t *testing.T) {
 	view := &View{
-		Attrs: ElementAttributes{
+		Attrs: ViewAttrs{
 			Width:      100,
 			Height:     100,
 			Direction:  Row,
@@ -19,7 +19,7 @@ func TestAddChildUpdateRemove(t *testing.T) {
 	}
 	mock := NewMockHandler()
 	child := &View{
-		Attrs: ElementAttributes{
+		Attrs: ViewAttrs{
 			Width:  10,
 			Height: 10,
 		},
@@ -40,7 +40,7 @@ func TestAddChildUpdateRemove(t *testing.T) {
 
 func TestUpdateWithSize(t *testing.T) {
 	view := &View{
-		Attrs: ElementAttributes{
+		Attrs: ViewAttrs{
 			Width:      100,
 			Height:     100,
 			Direction:  Row,
@@ -51,7 +51,7 @@ func TestUpdateWithSize(t *testing.T) {
 
 	mock := NewMockHandler()
 	child := &View{
-		Attrs: ElementAttributes{
+		Attrs: ViewAttrs{
 			Width:  10,
 			Height: 10,
 		},
@@ -69,7 +69,7 @@ func TestUpdateWithSize(t *testing.T) {
 
 func TestAddToParent(t *testing.T) {
 	root := &View{
-		Attrs: ElementAttributes{
+		Attrs: ViewAttrs{
 			Width:      100,
 			Height:     100,
 			Direction:  Row,
@@ -81,7 +81,7 @@ func TestAddToParent(t *testing.T) {
 	mock := NewMockHandler()
 
 	child := (&View{
-		Attrs: ElementAttributes{
+		Attrs: ViewAttrs{
 			Width:  10,
 			Height: 10,
 		},
@@ -97,7 +97,7 @@ func TestAddToParent(t *testing.T) {
 
 func TestAddChild(t *testing.T) {
 	view := &View{
-		Attrs: ElementAttributes{
+		Attrs: ViewAttrs{
 			Width:      100,
 			Height:     100,
 			Direction:  Row,
@@ -109,14 +109,14 @@ func TestAddChild(t *testing.T) {
 	mocks := [2]*mockHandler{NewMockHandler(), NewMockHandler()}
 	require.Equal(t, view, view.AddChild(
 		&View{
-			Attrs: ElementAttributes{
+			Attrs: ViewAttrs{
 				Width:  10,
 				Height: 10,
 			},
 			Handler: mocks[0].Handler,
 		},
 		&View{
-			Attrs: ElementAttributes{
+			Attrs: ViewAttrs{
 				Width:  10,
 				Height: 10,
 			},

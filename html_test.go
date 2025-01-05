@@ -41,7 +41,7 @@ func TestParseHTML(t *testing.T) {
 					</view>
 				</body>`,
 			expected: (&View{
-				Attrs: ElementAttributes{
+				Attrs: ViewAttrs{
 					Left:         50,
 					Top:          100,
 					Width:        200,
@@ -60,7 +60,7 @@ func TestParseHTML(t *testing.T) {
 					Shrink:       3,
 				},
 			}).AddChild(&View{
-				Attrs: ElementAttributes{
+				Attrs: ViewAttrs{
 					Width:  100,
 					Height: 200,
 				},
@@ -101,7 +101,7 @@ func TestParseHTML(t *testing.T) {
 				</view>
 						`,
 			expected: (&View{
-				Attrs: ElementAttributes{
+				Attrs: ViewAttrs{
 					Width:  200,
 					Height: 300,
 				},
@@ -154,7 +154,7 @@ func TestParseHTML(t *testing.T) {
 				Height: 200,
 			},
 			expected: (&View{
-				Attrs: ElementAttributes{
+				Attrs: ViewAttrs{
 					Width:  100,
 					Height: 200,
 				},
@@ -180,7 +180,7 @@ func TestParseHTML(t *testing.T) {
 				</view>
 						`,
 			expected: (&View{
-				Attrs: ElementAttributes{
+				Attrs: ViewAttrs{
 					Width:  200,
 					Height: 300,
 				},
@@ -382,7 +382,7 @@ func TestParseHTML(t *testing.T) {
 				Height: 800,
 			},
 			expected: (&View{
-				Attrs: ElementAttributes{
+				Attrs: ViewAttrs{
 					Width:        640,
 					Height:       800,
 					Direction:    Column,
@@ -392,7 +392,7 @@ func TestParseHTML(t *testing.T) {
 				},
 			}).AddChild(
 				(&View{
-					Attrs: ElementAttributes{
+					Attrs: ViewAttrs{
 						MarginTop:  50,
 						Grow:       1,
 						AlignItems: AlignItemCenter,
@@ -400,7 +400,7 @@ func TestParseHTML(t *testing.T) {
 					},
 				}).AddChild(
 					(&View{
-						Attrs: ElementAttributes{
+						Attrs: ViewAttrs{
 							Width:      300,
 							Height:     300,
 							MarginTop:  120,
@@ -411,7 +411,7 @@ func TestParseHTML(t *testing.T) {
 						},
 					}).AddChild(
 						(&View{
-							Attrs: ElementAttributes{
+							Attrs: ViewAttrs{
 								MarginTop:  20,
 								Width:      245,
 								Height:     200,
@@ -421,7 +421,7 @@ func TestParseHTML(t *testing.T) {
 							},
 						}).AddChild(
 							(&View{
-								Attrs: ElementAttributes{
+								Attrs: ViewAttrs{
 									Width:      180,
 									Height:     38,
 									AlignItems: AlignItemStart,
@@ -430,14 +430,14 @@ func TestParseHTML(t *testing.T) {
 								},
 							}).AddChild(
 								&View{
-									Attrs: ElementAttributes{
+									Attrs: ViewAttrs{
 										Height:       20,
 										Width:        180,
 										MarginBottom: 2,
 									},
 								},
 								&View{
-									Attrs: ElementAttributes{
+									Attrs: ViewAttrs{
 										Width:  180,
 										Height: 18,
 									},
@@ -445,7 +445,7 @@ func TestParseHTML(t *testing.T) {
 							),
 
 							(&View{
-								Attrs: ElementAttributes{
+								Attrs: ViewAttrs{
 									Width:      180,
 									Height:     38,
 									AlignItems: AlignItemStart,
@@ -455,14 +455,14 @@ func TestParseHTML(t *testing.T) {
 								},
 							}).AddChild(
 								&View{
-									Attrs: ElementAttributes{
+									Attrs: ViewAttrs{
 										Height:       20,
 										Width:        180,
 										MarginBottom: 2,
 									},
 								},
 								&View{
-									Attrs: ElementAttributes{
+									Attrs: ViewAttrs{
 										Width:  180,
 										Height: 18,
 									},
@@ -470,7 +470,7 @@ func TestParseHTML(t *testing.T) {
 							),
 						),
 						(&View{
-							Attrs: ElementAttributes{
+							Attrs: ViewAttrs{
 								MarginTop:    20,
 								MarginBottom: 20,
 								Grow:         1,
@@ -480,13 +480,13 @@ func TestParseHTML(t *testing.T) {
 							},
 						}).AddChild(
 							&View{
-								Attrs: ElementAttributes{
+								Attrs: ViewAttrs{
 									Width:  190,
 									Height: 49,
 								},
 							},
 							&View{
-								Attrs: ElementAttributes{
+								Attrs: ViewAttrs{
 									Width:      45,
 									Height:     49,
 									MarginLeft: 10,
@@ -494,7 +494,7 @@ func TestParseHTML(t *testing.T) {
 							},
 						),
 						(&View{
-							Attrs: ElementAttributes{
+							Attrs: ViewAttrs{
 								Position: PositionAbsolute,
 								Left:     300 - 35/2,
 								Top:      4 - 38/2,
@@ -503,7 +503,7 @@ func TestParseHTML(t *testing.T) {
 							},
 						}).AddChild(
 							&View{
-								Attrs: ElementAttributes{
+								Attrs: ViewAttrs{
 									Position: PositionAbsolute,
 									Left:     18,
 									Top:      17,
@@ -555,7 +555,7 @@ func TestParseHTML(t *testing.T) {
 				Height: 800,
 			},
 			expected: (&View{
-				Attrs: ElementAttributes{
+				Attrs: ViewAttrs{
 					Width:     640,
 					Height:    800,
 					Direction: Column,
@@ -564,14 +564,14 @@ func TestParseHTML(t *testing.T) {
 				},
 			}).AddChild(
 				(&View{
-					Attrs: ElementAttributes{
+					Attrs: ViewAttrs{
 						Direction: Column,
 						Justify:   JustifyCenter,
 						Grow:      1,
 					},
 				}).AddChild(
 					&View{
-						Attrs: ElementAttributes{
+						Attrs: ViewAttrs{
 							Width:  30,
 							Height: 800,
 						},
@@ -582,7 +582,7 @@ func TestParseHTML(t *testing.T) {
 			name: "functional component",
 			before: func(t *testing.T) {
 				register("test-comp", func() *View {
-					return &View{Attrs: ElementAttributes{Width: 100, Height: 100}}
+					return &View{Attrs: ViewAttrs{Width: 100, Height: 100}}
 				})
 			},
 			html: `
@@ -593,8 +593,8 @@ func TestParseHTML(t *testing.T) {
 				Width:  200,
 				Height: 300,
 			},
-			expected: (&View{Attrs: ElementAttributes{Width: 200, Height: 300}}).AddChild((&View{
-				Attrs: ElementAttributes{Position: PositionAbsolute, Width: 100, Height: 100},
+			expected: (&View{Attrs: ViewAttrs{Width: 200, Height: 300}}).AddChild((&View{
+				Attrs: ViewAttrs{Position: PositionAbsolute, Width: 100, Height: 100},
 			})),
 		},
 	}

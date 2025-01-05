@@ -14,7 +14,7 @@ import (
 func TestFlexAlignments(t *testing.T) {
 	w, h := 100, 100
 	child := &View{
-		Attrs: ElementAttributes{
+		Attrs: ViewAttrs{
 			Width:  50,
 			Height: 50,
 		},
@@ -28,7 +28,7 @@ func TestFlexAlignments(t *testing.T) {
 		{
 			name: "Column - Center, Center",
 			flex: &View{
-				Attrs: ElementAttributes{
+				Attrs: ViewAttrs{
 					Width:      w,
 					Height:     h,
 					Direction:  Column,
@@ -41,7 +41,7 @@ func TestFlexAlignments(t *testing.T) {
 		{
 			name: "Column - Start, End",
 			flex: &View{
-				Attrs: ElementAttributes{
+				Attrs: ViewAttrs{
 					Width:      w,
 					Height:     h,
 					Direction:  Column,
@@ -54,7 +54,7 @@ func TestFlexAlignments(t *testing.T) {
 		{
 			name: "Row - Center, Center",
 			flex: &View{
-				Attrs: ElementAttributes{
+				Attrs: ViewAttrs{
 					Width:      w,
 					Height:     h,
 					Direction:  Row,
@@ -67,7 +67,7 @@ func TestFlexAlignments(t *testing.T) {
 		{
 			name: "Row - End, Start",
 			flex: &View{
-				Attrs: ElementAttributes{
+				Attrs: ViewAttrs{
 					Width:      w,
 					Height:     h,
 					Direction:  Row,
@@ -88,7 +88,7 @@ func TestFlexAlignments(t *testing.T) {
 
 func TestFlexWrap(t *testing.T) {
 	flex := &View{
-		Attrs: ElementAttributes{
+		Attrs: ViewAttrs{
 			Width:      200,
 			Height:     200,
 			Direction:  Row,
@@ -101,7 +101,7 @@ func TestFlexWrap(t *testing.T) {
 	mocks := [3]*mockHandler{}
 	for i := 0; i < 3; i++ {
 		mocks[i] = NewMockHandler()
-		flex.AddChild(&View{Attrs: ElementAttributes{Width: 100, Height: 100}, Handler: mocks[i].Handler})
+		flex.AddChild(&View{Attrs: ViewAttrs{Width: 100, Height: 100}, Handler: mocks[i].Handler})
 	}
 
 	flex.Update()
@@ -129,7 +129,7 @@ func TestFlexWrap(t *testing.T) {
 func TestAbsolutePos(t *testing.T) {
 	left, top := 20, 30
 	f1 := &View{
-		Attrs: ElementAttributes{
+		Attrs: ViewAttrs{
 			Width:      100,
 			Height:     200,
 			Left:       left,
@@ -144,7 +144,7 @@ func TestAbsolutePos(t *testing.T) {
 
 	mock := NewMockHandler()
 
-	f1.AddChild(&View{Attrs: ElementAttributes{Width: 30, Height: 40}, Handler: mock.Handler})
+	f1.AddChild(&View{Attrs: ViewAttrs{Width: 30, Height: 40}, Handler: mock.Handler})
 	f1.Update()
 	f1.Draw(nil)
 
@@ -176,8 +176,8 @@ func TestAbsolutePos(t *testing.T) {
 func TestAbsolutePosRightBottom(t *testing.T) {
 	mock := NewMockHandler()
 
-	f1 := (&View{Attrs: ElementAttributes{Width: 100, Height: 100}}).addChild(
-		&View{Attrs: ElementAttributes{Position: PositionAbsolute, Width: 10, Height: 10, Right: Int(40), Bottom: Int(50)}, Handler: mock.Handler},
+	f1 := (&View{Attrs: ViewAttrs{Width: 100, Height: 100}}).addChild(
+		&View{Attrs: ViewAttrs{Position: PositionAbsolute, Width: 10, Height: 10, Right: Int(40), Bottom: Int(50)}, Handler: mock.Handler},
 	)
 
 	f1.Update()
@@ -188,7 +188,7 @@ func TestAbsolutePosRightBottom(t *testing.T) {
 
 func TestAbsolutePosNested(t *testing.T) {
 	f1 := &View{
-		Attrs: ElementAttributes{
+		Attrs: ViewAttrs{
 			Width:      150,
 			Height:     200,
 			Direction:  Row,
@@ -199,7 +199,7 @@ func TestAbsolutePosNested(t *testing.T) {
 	}
 
 	f2 := &View{
-		Attrs: ElementAttributes{
+		Attrs: ViewAttrs{
 			Width:      50,
 			Height:     150,
 			Left:       100,
@@ -217,7 +217,7 @@ func TestAbsolutePosNested(t *testing.T) {
 	mock := NewMockHandler()
 
 	f2.AddChild(&View{
-		Attrs: ElementAttributes{
+		Attrs: ViewAttrs{
 			Width:  30,
 			Height: 40,
 		},
@@ -255,7 +255,7 @@ func TestAbsolutePosNested(t *testing.T) {
 
 func TestNesting(t *testing.T) {
 	parent := &View{
-		Attrs: ElementAttributes{
+		Attrs: ViewAttrs{
 			Width:      300,
 			Height:     500,
 			Direction:  Column,
@@ -268,7 +268,7 @@ func TestNesting(t *testing.T) {
 	}
 
 	child := &View{
-		Attrs: ElementAttributes{
+		Attrs: ViewAttrs{
 			Width:      100,
 			Height:     200,
 			Direction:  Column,
@@ -282,7 +282,7 @@ func TestNesting(t *testing.T) {
 	item := NewMockHandler()
 
 	child.AddChild(&View{
-		Attrs: ElementAttributes{
+		Attrs: ViewAttrs{
 			Width:  30,
 			Height: 40,
 		},
@@ -333,7 +333,7 @@ func TestMargin(t *testing.T) {
 	}{
 		{
 			Flex: &View{
-				Attrs: ElementAttributes{
+				Attrs: ViewAttrs{
 					Width:      100,
 					Height:     100,
 					Direction:  Row,
@@ -342,7 +342,7 @@ func TestMargin(t *testing.T) {
 				},
 			},
 			View: &View{
-				Attrs: ElementAttributes{
+				Attrs: ViewAttrs{
 					Width:      50,
 					Height:     50,
 					MarginLeft: 20,
@@ -352,7 +352,7 @@ func TestMargin(t *testing.T) {
 		},
 		{
 			Flex: &View{
-				Attrs: ElementAttributes{
+				Attrs: ViewAttrs{
 					Width:      100,
 					Height:     100,
 					Direction:  Column,
@@ -361,7 +361,7 @@ func TestMargin(t *testing.T) {
 				},
 			},
 			View: &View{
-				Attrs: ElementAttributes{
+				Attrs: ViewAttrs{
 					Width:     50,
 					Height:    50,
 					MarginTop: 20,
@@ -371,7 +371,7 @@ func TestMargin(t *testing.T) {
 		},
 		{
 			Flex: &View{
-				Attrs: ElementAttributes{
+				Attrs: ViewAttrs{
 					Width:      100,
 					Height:     100,
 					Direction:  Row,
@@ -380,7 +380,7 @@ func TestMargin(t *testing.T) {
 				},
 			},
 			View: &View{
-				Attrs: ElementAttributes{
+				Attrs: ViewAttrs{
 					Width:       50,
 					Height:      50,
 					MarginTop:   10,
@@ -391,7 +391,7 @@ func TestMargin(t *testing.T) {
 		},
 		{
 			Flex: &View{
-				Attrs: ElementAttributes{
+				Attrs: ViewAttrs{
 					Width:      100,
 					Height:     100,
 					Direction:  Column,
@@ -400,7 +400,7 @@ func TestMargin(t *testing.T) {
 				},
 			},
 			View: &View{
-				Attrs: ElementAttributes{
+				Attrs: ViewAttrs{
 					Width:        50,
 					Height:       50,
 					MarginRight:  10,
@@ -424,7 +424,7 @@ func TestMargin(t *testing.T) {
 
 func TestMarginedItemPosition(t *testing.T) {
 	flex := &View{
-		Attrs: ElementAttributes{
+		Attrs: ViewAttrs{
 			Width:      200,
 			Height:     200,
 			Direction:  Column,
@@ -439,7 +439,7 @@ func TestMarginedItemPosition(t *testing.T) {
 	}
 
 	view1 := &View{
-		Attrs: ElementAttributes{
+		Attrs: ViewAttrs{
 			Width:      200,
 			Height:     50,
 			MarginTop:  10,
@@ -452,7 +452,7 @@ func TestMarginedItemPosition(t *testing.T) {
 	flex.AddChild(view1)
 
 	view2 := &View{
-		Attrs: ElementAttributes{
+		Attrs: ViewAttrs{
 			Width:  200,
 			Height: 10,
 		},
@@ -469,7 +469,7 @@ func TestMarginedItemPosition(t *testing.T) {
 
 func TestMultiMarginedWrapRowItems(t *testing.T) {
 	flex := &View{
-		Attrs: ElementAttributes{
+		Attrs: ViewAttrs{
 			Width:        200,
 			Height:       200,
 			Direction:    Row,
@@ -482,7 +482,7 @@ func TestMultiMarginedWrapRowItems(t *testing.T) {
 
 	mocks := [4]*mockHandler{}
 	view := View{
-		Attrs: ElementAttributes{
+		Attrs: ViewAttrs{
 			Width:      85,
 			Height:     85,
 			MarginTop:  10,
@@ -510,7 +510,7 @@ func TestRemoveChild(t *testing.T) {
 	w, h := 100, 100
 
 	flex := &View{
-		Attrs: ElementAttributes{
+		Attrs: ViewAttrs{
 			Width:      w,
 			Height:     h,
 			Direction:  Row,
@@ -525,7 +525,7 @@ func TestRemoveChild(t *testing.T) {
 	for i := 0; i < 2; i++ {
 		mocks[i] = NewMockHandler()
 		views[i] = &View{
-			Attrs: ElementAttributes{
+			Attrs: ViewAttrs{
 				Width:  50,
 				Height: 50,
 			},
@@ -549,7 +549,7 @@ func TestRemoveChild(t *testing.T) {
 
 func TestAutoExpanding(t *testing.T) {
 	flex := &View{
-		Attrs: ElementAttributes{
+		Attrs: ViewAttrs{
 			Width:      1000,
 			Height:     1000,
 			Direction:  Row,
@@ -562,7 +562,7 @@ func TestAutoExpanding(t *testing.T) {
 	for i := 0; i < 2; i++ {
 		mocks[i] = NewMockHandler()
 		v := &View{
-			Attrs: ElementAttributes{
+			Attrs: ViewAttrs{
 				Grow: 1,
 			},
 			Handler: mocks[i].Handler,
@@ -579,7 +579,7 @@ func TestAutoExpanding(t *testing.T) {
 
 func TestNestedChildrenGrow(t *testing.T) {
 	flex := &View{
-		Attrs: ElementAttributes{
+		Attrs: ViewAttrs{
 			Width:      1000,
 			Height:     1000,
 			Direction:  Row,
@@ -589,7 +589,7 @@ func TestNestedChildrenGrow(t *testing.T) {
 	}
 
 	child := &View{
-		Attrs: ElementAttributes{
+		Attrs: ViewAttrs{
 			Direction:  Column,
 			Justify:    JustifyCenter,
 			AlignItems: AlignItemStretch,
@@ -600,7 +600,7 @@ func TestNestedChildrenGrow(t *testing.T) {
 	flex.AddChild(child)
 
 	child2 := &View{
-		Attrs: ElementAttributes{
+		Attrs: ViewAttrs{
 			Direction:  Row,
 			Justify:    JustifyCenter,
 			AlignItems: AlignItemStretch,
@@ -614,7 +614,7 @@ func TestNestedChildrenGrow(t *testing.T) {
 	for i := 0; i < 2; i++ {
 		mocks[i] = NewMockHandler()
 		v := &View{
-			Attrs: ElementAttributes{
+			Attrs: ViewAttrs{
 				Grow: 1,
 			},
 			Handler: mocks[i].Handler,
@@ -631,7 +631,7 @@ func TestNestedChildrenGrow(t *testing.T) {
 
 func TestNestedChildGrow(t *testing.T) {
 	flex := &View{
-		Attrs: ElementAttributes{
+		Attrs: ViewAttrs{
 			Width:      1000,
 			Height:     1000,
 			Direction:  Column,
@@ -644,7 +644,7 @@ func TestNestedChildGrow(t *testing.T) {
 
 	flex.AddChild(
 		(&View{
-			Attrs: ElementAttributes{
+			Attrs: ViewAttrs{
 				Direction:  Column,
 				AlignItems: AlignItemStretch,
 				Justify:    JustifyCenter,
@@ -652,7 +652,7 @@ func TestNestedChildGrow(t *testing.T) {
 			},
 		}).AddChild(
 			&View{
-				Attrs: ElementAttributes{
+				Attrs: ViewAttrs{
 					Direction:  Row,
 					AlignItems: AlignItemStretch,
 					Justify:    JustifyCenter,
@@ -671,7 +671,7 @@ func TestNestedChildGrow(t *testing.T) {
 
 func TestMerginWithChild(t *testing.T) {
 	flex := &View{
-		Attrs: ElementAttributes{
+		Attrs: ViewAttrs{
 			Width:      1000,
 			Height:     1000,
 			Direction:  Column,
@@ -685,7 +685,7 @@ func TestMerginWithChild(t *testing.T) {
 
 	flex.AddChild(
 		(&View{
-			Attrs: ElementAttributes{
+			Attrs: ViewAttrs{
 				MarginRight:  50,
 				MarginBottom: 100,
 				Direction:    Column,
@@ -695,7 +695,7 @@ func TestMerginWithChild(t *testing.T) {
 			Handler: mock1.Handler,
 		}).AddChild(
 			&View{
-				Attrs: ElementAttributes{
+				Attrs: ViewAttrs{
 					Grow:   1,
 					Width:  100,
 					Height: 100,
@@ -714,7 +714,7 @@ func TestMerginWithChild(t *testing.T) {
 
 func TestStretchAndMargin(t *testing.T) {
 	flex := &View{
-		Attrs: ElementAttributes{
+		Attrs: ViewAttrs{
 			Width:      1000,
 			Height:     1000,
 			AlignItems: AlignItemStretch,
@@ -726,7 +726,7 @@ func TestStretchAndMargin(t *testing.T) {
 
 	flex.AddChild(
 		(&View{
-			Attrs: ElementAttributes{
+			Attrs: ViewAttrs{
 				MarginRight:  50,
 				MarginBottom: 100,
 				Grow:         1,
@@ -737,7 +737,7 @@ func TestStretchAndMargin(t *testing.T) {
 			Handler: mock1.Handler,
 		}).AddChild(
 			&View{
-				Attrs: ElementAttributes{
+				Attrs: ViewAttrs{
 					Width:  100,
 					Height: 100,
 				},
@@ -755,7 +755,7 @@ func TestStretchAndMargin(t *testing.T) {
 
 func TestStretchAndMarginItems(t *testing.T) {
 	flex := &View{
-		Attrs: ElementAttributes{
+		Attrs: ViewAttrs{
 			Width:      1000,
 			Height:     1000,
 			AlignItems: AlignItemStretch,
@@ -767,14 +767,14 @@ func TestStretchAndMarginItems(t *testing.T) {
 
 	flex.AddChild(
 		&View{
-			Attrs: ElementAttributes{
+			Attrs: ViewAttrs{
 				MarginRight: 50,
 				Grow:        1,
 			},
 			Handler: mock1.Handler,
 		},
 		&View{
-			Attrs: ElementAttributes{
+			Attrs: ViewAttrs{
 				MarginLeft: 50,
 				Grow:       1,
 			},
@@ -791,7 +791,7 @@ func TestStretchAndMarginItems(t *testing.T) {
 
 func TestStretchAndMarginItemsMain(t *testing.T) {
 	flex := &View{
-		Attrs: ElementAttributes{
+		Attrs: ViewAttrs{
 			Width:      1000,
 			Height:     1000,
 			AlignItems: AlignItemStretch,
@@ -805,7 +805,7 @@ func TestStretchAndMarginItemsMain(t *testing.T) {
 
 	flex.AddChild(
 		&View{
-			Attrs: ElementAttributes{
+			Attrs: ViewAttrs{
 				Width:        1000,
 				MarginBottom: 50,
 				Grow:         1,
@@ -813,7 +813,7 @@ func TestStretchAndMarginItemsMain(t *testing.T) {
 			Handler: mock1.Handler,
 		},
 		&View{
-			Attrs: ElementAttributes{
+			Attrs: ViewAttrs{
 				Width:        1000,
 				MarginBottom: 50,
 				Grow:         1,
@@ -831,7 +831,7 @@ func TestStretchAndMarginItemsMain(t *testing.T) {
 
 func TestStretchAndMarginItemsCross(t *testing.T) {
 	flex := &View{
-		Attrs: ElementAttributes{
+		Attrs: ViewAttrs{
 			Width:        1000,
 			Height:       1000,
 			AlignItems:   AlignItemStretch,
@@ -846,7 +846,7 @@ func TestStretchAndMarginItemsCross(t *testing.T) {
 
 	flex.AddChild(
 		&View{
-			Attrs: ElementAttributes{
+			Attrs: ViewAttrs{
 				Width:        1000,
 				MarginBottom: 50,
 				Grow:         1,
@@ -854,7 +854,7 @@ func TestStretchAndMarginItemsCross(t *testing.T) {
 			Handler: mock1.Handler,
 		},
 		&View{
-			Attrs: ElementAttributes{
+			Attrs: ViewAttrs{
 				Width:        1000,
 				MarginBottom: 50,
 				Grow:         1,
@@ -872,7 +872,7 @@ func TestStretchAndMarginItemsCross(t *testing.T) {
 
 func TestNestedFlex(t *testing.T) {
 	flex := &View{
-		Attrs: ElementAttributes{
+		Attrs: ViewAttrs{
 			Width:      1000,
 			Height:     1000,
 			Justify:    JustifyCenter,
@@ -886,7 +886,7 @@ func TestNestedFlex(t *testing.T) {
 
 	flex.AddChild(
 		(&View{
-			Attrs: ElementAttributes{
+			Attrs: ViewAttrs{
 				Width:      800,
 				Height:     800,
 				Justify:    JustifyCenter,
@@ -895,7 +895,7 @@ func TestNestedFlex(t *testing.T) {
 			Handler: mock1.Handler,
 		}).AddChild(
 			(&View{
-				Attrs: ElementAttributes{
+				Attrs: ViewAttrs{
 					Width:      100,
 					Height:     100,
 					Justify:    JustifyCenter,
@@ -904,7 +904,7 @@ func TestNestedFlex(t *testing.T) {
 				Handler: mock2.Handler,
 			}).AddChild(
 				&View{
-					Attrs: ElementAttributes{
+					Attrs: ViewAttrs{
 						Width:  10,
 						Height: 10,
 					},
@@ -924,7 +924,7 @@ func TestNestedFlex(t *testing.T) {
 
 func TestAbsoluteViewChildren(t *testing.T) {
 	flex := &View{
-		Attrs: ElementAttributes{
+		Attrs: ViewAttrs{
 			Width:      1000,
 			Height:     1000,
 			Justify:    JustifyCenter,
@@ -938,14 +938,14 @@ func TestAbsoluteViewChildren(t *testing.T) {
 
 	flex.AddChild(
 		(&View{
-			Attrs: ElementAttributes{
+			Attrs: ViewAttrs{
 				Width:  800,
 				Height: 800,
 			},
 			Handler: mock1.Handler,
 		}).AddChild(
 			(&View{
-				Attrs: ElementAttributes{
+				Attrs: ViewAttrs{
 					Width:    100,
 					Height:   100,
 					Position: PositionAbsolute,
@@ -953,7 +953,7 @@ func TestAbsoluteViewChildren(t *testing.T) {
 				Handler: mock2.Handler,
 			}).AddChild(
 				&View{
-					Attrs: ElementAttributes{
+					Attrs: ViewAttrs{
 						Width:    10,
 						Height:   10,
 						Position: PositionAbsolute,
@@ -974,7 +974,7 @@ func TestAbsoluteViewChildren(t *testing.T) {
 
 func TestAutoHeightCalculation(t *testing.T) {
 	flex := &View{
-		Attrs: ElementAttributes{
+		Attrs: ViewAttrs{
 			Width:      1000,
 			Height:     1000,
 			Grow:       0,
@@ -989,7 +989,7 @@ func TestAutoHeightCalculation(t *testing.T) {
 	mock2 := NewMockHandler()
 
 	firstRow := &View{
-		Attrs: ElementAttributes{
+		Attrs: ViewAttrs{
 			Direction: Column,
 			Grow:      0,
 			Shrink:    0,
@@ -999,14 +999,14 @@ func TestAutoHeightCalculation(t *testing.T) {
 	}
 
 	firstRow.AddChild(&View{
-		Attrs: ElementAttributes{
+		Attrs: ViewAttrs{
 			Width:  100,
 			Height: 100,
 		},
 	})
 
 	secondRow := &View{
-		Attrs: ElementAttributes{
+		Attrs: ViewAttrs{
 			Direction: Row,
 			Width:     200,
 			Height:    200,
@@ -1030,7 +1030,7 @@ func TestAutoHeightCalculation(t *testing.T) {
 
 func TestWidthInPctRow(t *testing.T) {
 	flex := &View{
-		Attrs: ElementAttributes{
+		Attrs: ViewAttrs{
 			Width:      500,
 			Height:     500,
 			Direction:  Row,
@@ -1043,14 +1043,14 @@ func TestWidthInPctRow(t *testing.T) {
 
 	flex.AddChild(
 		&View{
-			Attrs: ElementAttributes{
+			Attrs: ViewAttrs{
 				WidthInPct: 100,
 				Height:     100,
 			},
 			Handler: mock.Handler,
 		},
 		&View{
-			Attrs: ElementAttributes{
+			Attrs: ViewAttrs{
 				Width:  50,
 				Height: 100,
 			},
@@ -1065,7 +1065,7 @@ func TestWidthInPctRow(t *testing.T) {
 
 func TestWidthInPctCol(t *testing.T) {
 	flex := &View{
-		Attrs: ElementAttributes{
+		Attrs: ViewAttrs{
 			Width:      500,
 			Height:     500,
 			Direction:  Column,
@@ -1078,13 +1078,13 @@ func TestWidthInPctCol(t *testing.T) {
 
 	flex.AddChild(
 		&View{
-			Attrs: ElementAttributes{
+			Attrs: ViewAttrs{
 				Width:  50,
 				Height: 100,
 			},
 		},
 		&View{
-			Attrs: ElementAttributes{
+			Attrs: ViewAttrs{
 				WidthInPct: 100,
 				Height:     100,
 			},
@@ -1100,7 +1100,7 @@ func TestWidthInPctCol(t *testing.T) {
 
 func TestHeightInPctRow(t *testing.T) {
 	flex := &View{
-		Attrs: ElementAttributes{
+		Attrs: ViewAttrs{
 			Width:      500,
 			Height:     500,
 			Direction:  Row,
@@ -1113,14 +1113,14 @@ func TestHeightInPctRow(t *testing.T) {
 
 	flex.AddChild(
 		&View{
-			Attrs: ElementAttributes{
+			Attrs: ViewAttrs{
 				Width:       100,
 				HeightInPct: 100,
 			},
 			Handler: mock.Handler,
 		},
 		&View{
-			Attrs: ElementAttributes{
+			Attrs: ViewAttrs{
 				Width:  50,
 				Height: 100,
 			},
@@ -1135,7 +1135,7 @@ func TestHeightInPctRow(t *testing.T) {
 
 func TestHeightInPctCol(t *testing.T) {
 	flex := &View{
-		Attrs: ElementAttributes{
+		Attrs: ViewAttrs{
 			Width:      500,
 			Height:     500,
 			Direction:  Column,
@@ -1148,13 +1148,13 @@ func TestHeightInPctCol(t *testing.T) {
 
 	flex.AddChild(
 		&View{
-			Attrs: ElementAttributes{
+			Attrs: ViewAttrs{
 				Width:  50,
 				Height: 100,
 			},
 		},
 		&View{
-			Attrs: ElementAttributes{
+			Attrs: ViewAttrs{
 				Width:       100,
 				HeightInPct: 100,
 			},
@@ -1173,14 +1173,14 @@ func TestShrink(t *testing.T) {
 	mock := NewMockHandler()
 
 	root := &View{
-		Attrs: ElementAttributes{
+		Attrs: ViewAttrs{
 			Direction:  Row,
 			AlignItems: AlignItemCenter,
 		},
 	}
 
 	palette := &View{
-		Attrs: ElementAttributes{
+		Attrs: ViewAttrs{
 			Width:     w,
 			Shrink:    1,
 			Direction: Column,
@@ -1192,7 +1192,7 @@ func TestShrink(t *testing.T) {
 
 	for i := 0; i < items; i++ {
 		bar := &View{
-			Attrs: ElementAttributes{
+			Attrs: ViewAttrs{
 				Width:  w,
 				Height: h,
 			},

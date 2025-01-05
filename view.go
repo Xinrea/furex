@@ -9,7 +9,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-type ElementAttributes struct {
+type ViewAttrs struct {
 	Left         int
 	Right        *int
 	Top          int
@@ -44,7 +44,7 @@ type ElementAttributes struct {
 // You can set flex options, size, position and so on.
 // Handlers can be set to create custom component such as button or list.
 type View struct {
-	Attrs   ElementAttributes
+	Attrs   ViewAttrs
 	Handler Handler
 
 	containerEmbed

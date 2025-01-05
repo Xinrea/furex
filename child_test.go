@@ -51,7 +51,7 @@ func TestHandlers(t *testing.T) {
 					Width:  10,
 					Height: 20,
 				},
-				Handler: h.Handler,
+				Handler: h.ViewHandler,
 			})
 
 			// 	(0,0)
@@ -335,7 +335,7 @@ type mockHandler struct {
 	MousePoint image.Point
 	SwipeDir   SwipeDirection
 
-	Handler
+	ViewHandler
 }
 
 type mockFlags struct {
@@ -351,31 +351,31 @@ type mockFlags struct {
 func NewMockHandler() *mockHandler {
 	h := &mockHandler{}
 	h.Init()
-	h.Handler.Update = func(v *View) {
+	h.ViewHandler.Update = func(v *View) {
 		h.IsUpdated = true
 	}
-	h.Handler.Draw = func(screen *ebiten.Image, frame image.Rectangle, v *View) {
+	h.ViewHandler.Draw = func(screen *ebiten.Image, frame image.Rectangle, v *View) {
 		h.Frame = frame
 		h.IsDrawn = true
 	}
-	h.Handler.Press = func(x, y int, t ebiten.TouchID) {
+	h.ViewHandler.Press = func(x, y int, t ebiten.TouchID) {
 		h.IsPressed = true
 	}
-	h.Handler.Release = func(x, y int, isCancel bool) {
+	h.ViewHandler.Release = func(x, y int, isCancel bool) {
 		h.IsReleased = true
 		h.IsCancel = isCancel
 	}
-	h.Handler.Mouse = func(x, y int) bool {
+	h.ViewHandler.Mouse = func(x, y int) bool {
 		h.IsMouseMoved = true
 		h.MousePoint = image.Pt(x, y)
 		return true
 	}
-	h.Handler.Swipe = func(dir SwipeDirection) {
+	h.ViewHandler.Swipe = func(dir SwipeDirection) {
 		log.Println("swipe", dir)
 		h.IsSwiped = true
 		h.SwipeDir = dir
 	}
-	h.Handler.Extra = h
+	h.ViewHandler.Extra = h
 	return h
 }
 

@@ -94,14 +94,14 @@ func TestFlexWrap(t *testing.T) {
 			Direction:  Row,
 			Justify:    JustifyStart,
 			AlignItems: AlignItemStart,
-			Wrap:       Wrap,
+			Wrap:       WrapNormal,
 		},
 	}
 
 	mocks := [3]*mockHandler{}
 	for i := 0; i < 3; i++ {
 		mocks[i] = NewMockHandler()
-		flex.AddChild(&View{Attrs: ViewAttrs{Width: 100, Height: 100}, Handler: mocks[i].Handler})
+		flex.AddChild(&View{Attrs: ViewAttrs{Width: 100, Height: 100}, Handler: mocks[i].ViewHandler})
 	}
 
 	flex.Update()
@@ -138,13 +138,13 @@ func TestAbsolutePos(t *testing.T) {
 			Direction:  Row,
 			Justify:    JustifyCenter,
 			AlignItems: AlignItemCenter,
-			Wrap:       Wrap,
+			Wrap:       WrapNormal,
 		},
 	}
 
 	mock := NewMockHandler()
 
-	f1.AddChild(&View{Attrs: ViewAttrs{Width: 30, Height: 40}, Handler: mock.Handler})
+	f1.AddChild(&View{Attrs: ViewAttrs{Width: 30, Height: 40}, Handler: mock.ViewHandler})
 	f1.Update()
 	f1.Draw(nil)
 
@@ -177,7 +177,7 @@ func TestAbsolutePosRightBottom(t *testing.T) {
 	mock := NewMockHandler()
 
 	f1 := (&View{Attrs: ViewAttrs{Width: 100, Height: 100}}).addChild(
-		&View{Attrs: ViewAttrs{Position: PositionAbsolute, Width: 10, Height: 10, Right: Int(40), Bottom: Int(50)}, Handler: mock.Handler},
+		&View{Attrs: ViewAttrs{Position: PositionAbsolute, Width: 10, Height: 10, Right: Int(40), Bottom: Int(50)}, Handler: mock.ViewHandler},
 	)
 
 	f1.Update()
@@ -194,7 +194,7 @@ func TestAbsolutePosNested(t *testing.T) {
 			Direction:  Row,
 			Justify:    JustifyStart,
 			AlignItems: AlignItemCenter,
-			Wrap:       Wrap,
+			Wrap:       WrapNormal,
 		},
 	}
 
@@ -208,7 +208,7 @@ func TestAbsolutePosNested(t *testing.T) {
 			Direction:  Row,
 			Justify:    JustifyCenter,
 			AlignItems: AlignItemCenter,
-			Wrap:       Wrap,
+			Wrap:       WrapNormal,
 		},
 	}
 
@@ -221,7 +221,7 @@ func TestAbsolutePosNested(t *testing.T) {
 			Width:  30,
 			Height: 40,
 		},
-		Handler: mock.Handler,
+		Handler: mock.ViewHandler,
 	})
 	f1.Update()
 	f1.Draw(nil)
@@ -286,7 +286,7 @@ func TestNesting(t *testing.T) {
 			Width:  30,
 			Height: 40,
 		},
-		Handler: item.Handler,
+		Handler: item.ViewHandler,
 	})
 
 	parent.Update()
@@ -413,7 +413,7 @@ func TestMargin(t *testing.T) {
 
 	for _, tt := range tests {
 		mock := NewMockHandler()
-		tt.View.Handler = mock.Handler
+		tt.View.Handler = mock.ViewHandler
 		tt.Flex.AddChild(tt.View)
 		tt.Flex.Update()
 		tt.Flex.Draw(nil)
@@ -447,7 +447,7 @@ func TestMarginedItemPosition(t *testing.T) {
 			Justify:    JustifyStart,
 			AlignItems: AlignItemCenter,
 		},
-		Handler: mocks[0].Handler,
+		Handler: mocks[0].ViewHandler,
 	}
 	flex.AddChild(view1)
 
@@ -456,7 +456,7 @@ func TestMarginedItemPosition(t *testing.T) {
 			Width:  200,
 			Height: 10,
 		},
-		Handler: mocks[1].Handler,
+		Handler: mocks[1].ViewHandler,
 	}
 	view1.addChild(view2)
 
@@ -476,7 +476,7 @@ func TestMultiMarginedWrapRowItems(t *testing.T) {
 			Justify:      JustifyStart,
 			AlignItems:   AlignItemCenter,
 			AlignContent: AlignContentCenter,
-			Wrap:         Wrap,
+			Wrap:         WrapNormal,
 		},
 	}
 
@@ -493,7 +493,7 @@ func TestMultiMarginedWrapRowItems(t *testing.T) {
 	for i := 0; i < 4; i++ {
 		mocks[i] = NewMockHandler()
 		v := view
-		v.Handler = mocks[i].Handler
+		v.Handler = mocks[i].ViewHandler
 		flex.AddChild(&v)
 	}
 
@@ -529,7 +529,7 @@ func TestRemoveChild(t *testing.T) {
 				Width:  50,
 				Height: 50,
 			},
-			Handler: mocks[i].Handler,
+			Handler: mocks[i].ViewHandler,
 		}
 		flex.AddChild(views[i])
 	}
@@ -565,7 +565,7 @@ func TestAutoExpanding(t *testing.T) {
 			Attrs: ViewAttrs{
 				Grow: 1,
 			},
-			Handler: mocks[i].Handler,
+			Handler: mocks[i].ViewHandler,
 		}
 		flex.AddChild(v)
 	}
@@ -617,7 +617,7 @@ func TestNestedChildrenGrow(t *testing.T) {
 			Attrs: ViewAttrs{
 				Grow: 1,
 			},
-			Handler: mocks[i].Handler,
+			Handler: mocks[i].ViewHandler,
 		}
 		child2.AddChild(v)
 	}
@@ -658,7 +658,7 @@ func TestNestedChildGrow(t *testing.T) {
 					Justify:    JustifyCenter,
 					Grow:       1,
 				},
-				Handler: mock.Handler,
+				Handler: mock.ViewHandler,
 			},
 		),
 	)
@@ -692,7 +692,7 @@ func TestMerginWithChild(t *testing.T) {
 				AlignItems:   AlignItemEnd,
 				Justify:      JustifyEnd,
 			},
-			Handler: mock1.Handler,
+			Handler: mock1.ViewHandler,
 		}).AddChild(
 			&View{
 				Attrs: ViewAttrs{
@@ -700,7 +700,7 @@ func TestMerginWithChild(t *testing.T) {
 					Width:  100,
 					Height: 100,
 				},
-				Handler: mock2.Handler,
+				Handler: mock2.ViewHandler,
 			},
 		),
 	)
@@ -734,14 +734,14 @@ func TestStretchAndMargin(t *testing.T) {
 				AlignItems:   AlignItemEnd,
 				Justify:      JustifyEnd,
 			},
-			Handler: mock1.Handler,
+			Handler: mock1.ViewHandler,
 		}).AddChild(
 			&View{
 				Attrs: ViewAttrs{
 					Width:  100,
 					Height: 100,
 				},
-				Handler: mock2.Handler,
+				Handler: mock2.ViewHandler,
 			},
 		),
 	)
@@ -771,14 +771,14 @@ func TestStretchAndMarginItems(t *testing.T) {
 				MarginRight: 50,
 				Grow:        1,
 			},
-			Handler: mock1.Handler,
+			Handler: mock1.ViewHandler,
 		},
 		&View{
 			Attrs: ViewAttrs{
 				MarginLeft: 50,
 				Grow:       1,
 			},
-			Handler: mock2.Handler,
+			Handler: mock2.ViewHandler,
 		},
 	)
 
@@ -795,7 +795,7 @@ func TestStretchAndMarginItemsMain(t *testing.T) {
 			Width:      1000,
 			Height:     1000,
 			AlignItems: AlignItemStretch,
-			Wrap:       Wrap,
+			Wrap:       WrapNormal,
 			Direction:  Column,
 		},
 	}
@@ -810,7 +810,7 @@ func TestStretchAndMarginItemsMain(t *testing.T) {
 				MarginBottom: 50,
 				Grow:         1,
 			},
-			Handler: mock1.Handler,
+			Handler: mock1.ViewHandler,
 		},
 		&View{
 			Attrs: ViewAttrs{
@@ -818,7 +818,7 @@ func TestStretchAndMarginItemsMain(t *testing.T) {
 				MarginBottom: 50,
 				Grow:         1,
 			},
-			Handler: mock2.Handler,
+			Handler: mock2.ViewHandler,
 		},
 	)
 
@@ -836,7 +836,7 @@ func TestStretchAndMarginItemsCross(t *testing.T) {
 			Height:       1000,
 			AlignItems:   AlignItemStretch,
 			AlignContent: AlignContentStretch,
-			Wrap:         Wrap,
+			Wrap:         WrapNormal,
 			Direction:    Row,
 		},
 	}
@@ -851,7 +851,7 @@ func TestStretchAndMarginItemsCross(t *testing.T) {
 				MarginBottom: 50,
 				Grow:         1,
 			},
-			Handler: mock1.Handler,
+			Handler: mock1.ViewHandler,
 		},
 		&View{
 			Attrs: ViewAttrs{
@@ -859,7 +859,7 @@ func TestStretchAndMarginItemsCross(t *testing.T) {
 				MarginBottom: 50,
 				Grow:         1,
 			},
-			Handler: mock2.Handler,
+			Handler: mock2.ViewHandler,
 		},
 	)
 
@@ -892,7 +892,7 @@ func TestNestedFlex(t *testing.T) {
 				Justify:    JustifyCenter,
 				AlignItems: AlignItemCenter,
 			},
-			Handler: mock1.Handler,
+			Handler: mock1.ViewHandler,
 		}).AddChild(
 			(&View{
 				Attrs: ViewAttrs{
@@ -901,14 +901,14 @@ func TestNestedFlex(t *testing.T) {
 					Justify:    JustifyCenter,
 					AlignItems: AlignItemCenter,
 				},
-				Handler: mock2.Handler,
+				Handler: mock2.ViewHandler,
 			}).AddChild(
 				&View{
 					Attrs: ViewAttrs{
 						Width:  10,
 						Height: 10,
 					},
-					Handler: mock3.Handler,
+					Handler: mock3.ViewHandler,
 				},
 			),
 		),
@@ -942,7 +942,7 @@ func TestAbsoluteViewChildren(t *testing.T) {
 				Width:  800,
 				Height: 800,
 			},
-			Handler: mock1.Handler,
+			Handler: mock1.ViewHandler,
 		}).AddChild(
 			(&View{
 				Attrs: ViewAttrs{
@@ -950,7 +950,7 @@ func TestAbsoluteViewChildren(t *testing.T) {
 					Height:   100,
 					Position: PositionAbsolute,
 				},
-				Handler: mock2.Handler,
+				Handler: mock2.ViewHandler,
 			}).AddChild(
 				&View{
 					Attrs: ViewAttrs{
@@ -958,7 +958,7 @@ func TestAbsoluteViewChildren(t *testing.T) {
 						Height:   10,
 						Position: PositionAbsolute,
 					},
-					Handler: mock3.Handler,
+					Handler: mock3.ViewHandler,
 				},
 			),
 		),
@@ -995,7 +995,7 @@ func TestAutoHeightCalculation(t *testing.T) {
 			Shrink:    0,
 			Width:     100,
 		},
-		Handler: mock1.Handler,
+		Handler: mock1.ViewHandler,
 	}
 
 	firstRow.AddChild(&View{
@@ -1013,7 +1013,7 @@ func TestAutoHeightCalculation(t *testing.T) {
 			Grow:      0,
 			Shrink:    0,
 		},
-		Handler: mock2.Handler,
+		Handler: mock2.ViewHandler,
 	}
 
 	flex.AddChild(
@@ -1047,7 +1047,7 @@ func TestWidthInPctRow(t *testing.T) {
 				WidthInPct: 100,
 				Height:     100,
 			},
-			Handler: mock.Handler,
+			Handler: mock.ViewHandler,
 		},
 		&View{
 			Attrs: ViewAttrs{
@@ -1088,7 +1088,7 @@ func TestWidthInPctCol(t *testing.T) {
 				WidthInPct: 100,
 				Height:     100,
 			},
-			Handler: mock.Handler,
+			Handler: mock.ViewHandler,
 		},
 	)
 
@@ -1117,7 +1117,7 @@ func TestHeightInPctRow(t *testing.T) {
 				Width:       100,
 				HeightInPct: 100,
 			},
-			Handler: mock.Handler,
+			Handler: mock.ViewHandler,
 		},
 		&View{
 			Attrs: ViewAttrs{
@@ -1158,7 +1158,7 @@ func TestHeightInPctCol(t *testing.T) {
 				Width:       100,
 				HeightInPct: 100,
 			},
-			Handler: mock.Handler,
+			Handler: mock.ViewHandler,
 		},
 	)
 
@@ -1186,7 +1186,7 @@ func TestShrink(t *testing.T) {
 			Direction: Column,
 			Justify:   JustifyCenter,
 		},
-		Handler: mock.Handler,
+		Handler: mock.ViewHandler,
 	}
 	palette.AddTo(root)
 
@@ -1208,7 +1208,7 @@ func TestShrink(t *testing.T) {
 
 func flexItemBounds(parent *View, child *View) image.Rectangle {
 	mock := NewMockHandler()
-	child.Handler = mock.Handler
+	child.Handler = mock.ViewHandler
 
 	parent.AddChild(child)
 	parent.Update()

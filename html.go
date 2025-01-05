@@ -44,7 +44,7 @@ type ParseOptions struct {
 	Height int
 
 	// Handler is the handler for the root view.
-	Handler *Handler
+	Handler *ViewHandler
 }
 
 func Parse(input string, opts *ParseOptions) *View {
@@ -220,7 +220,7 @@ func component(name string, m ComponentsMap, v *View) bool {
 	if c == nil {
 		return ok
 	}
-	if c, ok := c.(func() Handler); ok {
+	if c, ok := c.(func() ViewHandler); ok {
 		v.Handler = c()
 		return true
 	}
@@ -318,15 +318,15 @@ var styleMapper = map[string]mapper[View]{
 	},
 	"position": {
 		parseFunc: parsePosition,
-		setFunc:   setFunc(func(v *View, val Position) { v.Attrs.Position = val }),
+		setFunc:   setFunc(func(v *View, val FlexPosition) { v.Attrs.Position = val }),
 	},
 	"direction": {
 		parseFunc: parseDirection,
-		setFunc:   setFunc(func(v *View, val Direction) { v.Attrs.Direction = val }),
+		setFunc:   setFunc(func(v *View, val FlexDirection) { v.Attrs.Direction = val }),
 	},
 	"flex-direction": {
 		parseFunc: parseDirection,
-		setFunc:   setFunc(func(v *View, val Direction) { v.Attrs.Direction = val }),
+		setFunc:   setFunc(func(v *View, val FlexDirection) { v.Attrs.Direction = val }),
 	},
 	"flex-wrap": {
 		parseFunc: parseWrap,
@@ -338,19 +338,19 @@ var styleMapper = map[string]mapper[View]{
 	},
 	"justify": {
 		parseFunc: parseJustify,
-		setFunc:   setFunc(func(v *View, val Justify) { v.Attrs.Justify = val }),
+		setFunc:   setFunc(func(v *View, val FlexJustify) { v.Attrs.Justify = val }),
 	},
 	"justify-content": {
 		parseFunc: parseJustify,
-		setFunc:   setFunc(func(v *View, val Justify) { v.Attrs.Justify = val }),
+		setFunc:   setFunc(func(v *View, val FlexJustify) { v.Attrs.Justify = val }),
 	},
 	"align-items": {
 		parseFunc: parseAlignItem,
-		setFunc:   setFunc(func(v *View, val AlignItem) { v.Attrs.AlignItems = val }),
+		setFunc:   setFunc(func(v *View, val FlexAlignItem) { v.Attrs.AlignItems = val }),
 	},
 	"align-content": {
 		parseFunc: parseAlignContent,
-		setFunc:   setFunc(func(v *View, val AlignContent) { v.Attrs.AlignContent = val }),
+		setFunc:   setFunc(func(v *View, val FlexAlignContent) { v.Attrs.AlignContent = val }),
 	},
 	"flex-grow": {
 		parseFunc: parseFloat,
@@ -370,7 +370,7 @@ var styleMapper = map[string]mapper[View]{
 	},
 	"display": {
 		parseFunc: parseDisplay,
-		setFunc:   setFunc(func(v *View, val Display) { v.Attrs.Display = val }),
+		setFunc:   setFunc(func(v *View, val FlexDisplay) { v.Attrs.Display = val }),
 	},
 }
 
@@ -461,7 +461,7 @@ func parseDirection(val string) (any, error) {
 func parseWrap(val string) (any, error) {
 	switch val {
 	case "wrap":
-		return Wrap, nil
+		return WrapNormal, nil
 	case "nowrap":
 		return NoWrap, nil
 	}

@@ -23,7 +23,7 @@ func TestAddChildUpdateRemove(t *testing.T) {
 			Width:  10,
 			Height: 10,
 		},
-		Handler: mock.Handler,
+		Handler: mock.ViewHandler,
 	}
 	require.Equal(t, view, view.AddChild(child))
 	require.True(t, view.isDirty)
@@ -55,7 +55,7 @@ func TestUpdateWithSize(t *testing.T) {
 			Width:  10,
 			Height: 10,
 		},
-		Handler: mock.Handler,
+		Handler: mock.ViewHandler,
 	}
 	require.Equal(t, view, view.AddChild(child))
 
@@ -85,7 +85,7 @@ func TestAddToParent(t *testing.T) {
 			Width:  10,
 			Height: 10,
 		},
-		Handler: mock.Handler,
+		Handler: mock.ViewHandler,
 	})
 
 	require.Equal(t, child, child.AddTo(root))
@@ -113,14 +113,14 @@ func TestAddChild(t *testing.T) {
 				Width:  10,
 				Height: 10,
 			},
-			Handler: mocks[0].Handler,
+			Handler: mocks[0].ViewHandler,
 		},
 		&View{
 			Attrs: ViewAttrs{
 				Width:  10,
 				Height: 10,
 			},
-			Handler: mocks[1].Handler,
+			Handler: mocks[1].ViewHandler,
 		},
 	))
 
@@ -138,12 +138,12 @@ func TestAddChild(t *testing.T) {
 
 type CountingHandler struct {
 	Times int
-	Handler
+	ViewHandler
 }
 
 func newCountingHandler() *CountingHandler {
 	h := &CountingHandler{}
-	h.Handler.Update = h.Update
+	h.ViewHandler.Update = h.Update
 	return h
 }
 
@@ -157,10 +157,10 @@ func TestUpdateOnlyOnce(t *testing.T) {
 
 	// given
 	rootView := &View{
-		Handler: rootHandler.Handler,
+		Handler: rootHandler.ViewHandler,
 	}
 	nestedView := &View{
-		Handler: nestedHandler.Handler,
+		Handler: nestedHandler.ViewHandler,
 	}
 	rootView.addChild(nestedView)
 

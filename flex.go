@@ -7,15 +7,15 @@ import (
 	"math"
 )
 
-// Direction is the direction in which flex items are laid out
-type Direction uint8
+// FlexDirection is the direction in which flex items are laid out
+type FlexDirection uint8
 
 const (
-	Row Direction = iota
+	Row FlexDirection = iota
 	Column
 )
 
-func (d Direction) String() string {
+func (d FlexDirection) String() string {
 	switch d {
 	case Row:
 		return "row"
@@ -26,18 +26,18 @@ func (d Direction) String() string {
 	}
 }
 
-// Justify aligns items along the main axis.
-type Justify uint8
+// FlexJustify aligns items along the main axis.
+type FlexJustify uint8
 
 const (
-	JustifyStart        Justify = iota // pack to start of line
-	JustifyEnd                         // pack to end of line
-	JustifyCenter                      // pack to center of line
-	JustifySpaceBetween                // even spacing
-	JustifySpaceAround                 // even spacing, half-size on each end
+	JustifyStart        FlexJustify = iota // pack to start of line
+	JustifyEnd                             // pack to end of line
+	JustifyCenter                          // pack to center of line
+	JustifySpaceBetween                    // even spacing
+	JustifySpaceAround                     // even spacing, half-size on each end
 )
 
-func (f Justify) String() string {
+func (f FlexJustify) String() string {
 	switch f {
 	case JustifyStart:
 		return "flex-start"
@@ -79,17 +79,17 @@ func (f FlexAlign) String() string {
 	}
 }
 
-// AlignItem aligns items along the cross axis.
-type AlignItem uint8
+// FlexAlignItem aligns items along the cross axis.
+type FlexAlignItem uint8
 
 const (
-	AlignItemStretch AlignItem = iota
+	AlignItemStretch FlexAlignItem = iota
 	AlignItemStart
 	AlignItemEnd
 	AlignItemCenter
 )
 
-func (f AlignItem) String() string {
+func (f FlexAlignItem) String() string {
 	switch f {
 	case AlignItemStretch:
 		return "stretch"
@@ -110,7 +110,7 @@ type FlexWrap uint8
 
 const (
 	NoWrap FlexWrap = iota
-	Wrap
+	WrapNormal
 	WrapReverse
 )
 
@@ -118,7 +118,7 @@ func (f FlexWrap) String() string {
 	switch f {
 	case NoWrap:
 		return "nowrap"
-	case Wrap:
+	case WrapNormal:
 		return "wrap"
 	case WrapReverse:
 		return "wrap-reverse"
@@ -127,12 +127,12 @@ func (f FlexWrap) String() string {
 	}
 }
 
-// AlignContent is the 'align-content' property.
+// FlexAlignContent is the 'align-content' property.
 // It aligns container lines when there is extra space on the cross-axis.
-type AlignContent uint8
+type FlexAlignContent uint8
 
 const (
-	AlignContentStart AlignContent = iota
+	AlignContentStart FlexAlignContent = iota
 	AlignContentEnd
 	AlignContentCenter
 	AlignContentSpaceBetween
@@ -140,7 +140,7 @@ const (
 	AlignContentStretch
 )
 
-func (f AlignContent) String() string {
+func (f FlexAlignContent) String() string {
 	switch f {
 	case AlignContentStart:
 		return "start"
@@ -158,15 +158,15 @@ func (f AlignContent) String() string {
 	return fmt.Sprintf("unknown align-content: %d", f)
 }
 
-// Position is the 'position' property
-type Position uint8
+// FlexPosition is the 'position' property
+type FlexPosition uint8
 
 const (
-	PositionStatic Position = iota
+	PositionStatic FlexPosition = iota
 	PositionAbsolute
 )
 
-func (p Position) String() string {
+func (p FlexPosition) String() string {
 	switch p {
 	case PositionStatic:
 		return "static"
@@ -176,15 +176,15 @@ func (p Position) String() string {
 	return fmt.Sprintf("unknown position: %d", p)
 }
 
-// Display is the 'display' property
-type Display uint8
+// FlexDisplay is the 'display' property
+type FlexDisplay uint8
 
 const (
-	DisplayFlex Display = iota
+	DisplayFlex FlexDisplay = iota
 	DisplayNone
 )
 
-func (d Display) String() string {
+func (d FlexDisplay) String() string {
 	switch d {
 	case DisplayFlex:
 		return "flex"

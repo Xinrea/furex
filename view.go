@@ -9,6 +9,14 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
+func NewView(opts ...ViewOption) *View {
+	v := &View{}
+	for _, opt := range opts {
+		opt(v)
+	}
+	return v
+}
+
 type ViewAttrs struct {
 	Left         int
 	Right        *int
@@ -22,15 +30,15 @@ type ViewAttrs struct {
 	MarginTop    int
 	MarginRight  int
 	MarginBottom int
-	Position     Position
-	Direction    Direction
+	Position     FlexPosition
+	Direction    FlexDirection
 	Wrap         FlexWrap
-	Justify      Justify
-	AlignItems   AlignItem
-	AlignContent AlignContent
+	Justify      FlexJustify
+	AlignItems   FlexAlignItem
+	AlignContent FlexAlignContent
 	Grow         float64
 	Shrink       float64
-	Display      Display
+	Display      FlexDisplay
 
 	ID         string
 	Raw        string
@@ -45,7 +53,7 @@ type ViewAttrs struct {
 // Handlers can be set to create custom component such as button or list.
 type View struct {
 	Attrs   ViewAttrs
-	Handler Handler
+	Handler ViewHandler
 
 	containerEmbed
 	flexEmbed
@@ -341,13 +349,13 @@ func (v *View) SetMarginBottom(marginBottom int) {
 }
 
 // SetPosition sets the position of the view.
-func (v *View) SetPosition(position Position) {
+func (v *View) SetPosition(position FlexPosition) {
 	v.Attrs.Position = position
 	v.Layout()
 }
 
 // SetDirection sets the direction of the view.
-func (v *View) SetDirection(direction Direction) {
+func (v *View) SetDirection(direction FlexDirection) {
 	v.Attrs.Direction = direction
 	v.Layout()
 }
@@ -359,19 +367,19 @@ func (v *View) SetWrap(wrap FlexWrap) {
 }
 
 // SetJustify sets the justify property of the view.
-func (v *View) SetJustify(justify Justify) {
+func (v *View) SetJustify(justify FlexJustify) {
 	v.Attrs.Justify = justify
 	v.Layout()
 }
 
 // SetAlignItems sets the align items property of the view.
-func (v *View) SetAlignItems(alignItems AlignItem) {
+func (v *View) SetAlignItems(alignItems FlexAlignItem) {
 	v.Attrs.AlignItems = alignItems
 	v.Layout()
 }
 
 // SetAlignContent sets the align content property of the view.
-func (v *View) SetAlignContent(alignContent AlignContent) {
+func (v *View) SetAlignContent(alignContent FlexAlignContent) {
 	v.Attrs.AlignContent = alignContent
 	v.Layout()
 }
@@ -389,7 +397,7 @@ func (v *View) SetShrink(shrink float64) {
 }
 
 // SetDisplay sets the display property of the view.
-func (v *View) SetDisplay(display Display) {
+func (v *View) SetDisplay(display FlexDisplay) {
 	v.Attrs.Display = display
 	v.Layout()
 }
@@ -448,12 +456,12 @@ type ViewConfig struct {
 	MarginTop    int
 	MarginRight  int
 	MarginBottom int
-	Position     Position
-	Direction    Direction
+	Position     FlexPosition
+	Direction    FlexDirection
 	Wrap         FlexWrap
-	Justify      Justify
-	AlignItems   AlignItem
-	AlignContent AlignContent
+	Justify      FlexJustify
+	AlignItems   FlexAlignItem
+	AlignContent FlexAlignContent
 	Grow         float64
 	Shrink       float64
 	children     []ViewConfig

@@ -52,7 +52,7 @@ func TestParseHTML(t *testing.T) {
 					MarginBottom: 150,
 					Position:     PositionAbsolute,
 					Direction:    Row,
-					Wrap:         Wrap,
+					Wrap:         WrapNormal,
 					Justify:      JustifyEnd,
 					AlignItems:   AlignItemEnd,
 					AlignContent: AlignContentCenter,
@@ -126,8 +126,8 @@ func TestParseHTML(t *testing.T) {
 						</body>`,
 			opts: &ParseOptions{
 				Components: map[string]Component{
-					"mock-handler": func() Handler {
-						return NewMockHandler().Handler
+					"mock-handler": func() ViewHandler {
+						return NewMockHandler().ViewHandler
 					},
 				},
 			},
@@ -146,8 +146,8 @@ func TestParseHTML(t *testing.T) {
 						</body>`,
 			opts: &ParseOptions{
 				Components: map[string]Component{
-					"mock-handler": func() Handler {
-						return NewMockHandler().Handler
+					"mock-handler": func() ViewHandler {
+						return NewMockHandler().ViewHandler
 					},
 				},
 				Width:  100,

@@ -229,11 +229,24 @@ func (v *View) GetChildren() []*View {
 	return ret
 }
 
+// Len returns the number of children.
+func (v *View) Len() int {
+	return len(v.children)
+}
+
 func (v *View) NthChild(n int) *View {
 	if n < 0 || n >= len(v.children) {
 		return nil
 	}
 	return v.children[n].item
+}
+
+func (v *View) First() *View {
+	return v.NthChild(0)
+}
+
+func (v *View) Last() *View {
+	return v.NthChild(v.Len() - 1)
 }
 
 // GetByID returns the view with the specified id.

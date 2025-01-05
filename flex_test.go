@@ -14,8 +14,10 @@ import (
 func TestFlexAlignments(t *testing.T) {
 	w, h := 100, 100
 	child := &View{
-		Width:  50,
-		Height: 50,
+		Attrs: ElementAttributes{
+			Width:  50,
+			Height: 50,
+		},
 	}
 
 	var tests = []struct {
@@ -26,44 +28,52 @@ func TestFlexAlignments(t *testing.T) {
 		{
 			name: "Column - Center, Center",
 			flex: &View{
-				Width:      w,
-				Height:     h,
-				Direction:  Column,
-				Justify:    JustifyCenter,
-				AlignItems: AlignItemCenter,
+				Attrs: ElementAttributes{
+					Width:      w,
+					Height:     h,
+					Direction:  Column,
+					Justify:    JustifyCenter,
+					AlignItems: AlignItemCenter,
+				},
 			},
 			want: image.Rect(25, 25, 75, 75),
 		},
 		{
 			name: "Column - Start, End",
 			flex: &View{
-				Width:      w,
-				Height:     h,
-				Direction:  Column,
-				Justify:    JustifyStart,
-				AlignItems: AlignItemEnd,
+				Attrs: ElementAttributes{
+					Width:      w,
+					Height:     h,
+					Direction:  Column,
+					Justify:    JustifyStart,
+					AlignItems: AlignItemEnd,
+				},
 			},
 			want: image.Rect(50, 0, 100, 50),
 		},
 		{
 			name: "Row - Center, Center",
 			flex: &View{
-				Width:      w,
-				Height:     h,
-				Direction:  Row,
-				Justify:    JustifyCenter,
-				AlignItems: AlignItemCenter,
+				Attrs: ElementAttributes{
+					Width:      w,
+					Height:     h,
+					Direction:  Row,
+					Justify:    JustifyCenter,
+					AlignItems: AlignItemCenter,
+				},
 			},
 			want: image.Rect(25, 25, 75, 75),
 		},
 		{
 			name: "Row - End, Start",
 			flex: &View{
-				Width:      w,
-				Height:     h,
-				Direction:  Row,
-				Justify:    JustifyEnd,
-				AlignItems: AlignItemStart,
+				Attrs: ElementAttributes{
+					Width:      w,
+					Height:     h,
+					Direction:  Row,
+					Justify:    JustifyEnd,
+					AlignItems: AlignItemStart,
+				},
 			},
 			want: image.Rect(50, 0, 100, 50),
 		},
@@ -78,18 +88,21 @@ func TestFlexAlignments(t *testing.T) {
 
 func TestFlexWrap(t *testing.T) {
 	flex := &View{
-		Width:      200,
-		Height:     200,
-		Direction:  Row,
-		Justify:    JustifyStart,
-		AlignItems: AlignItemStart,
-		Wrap:       Wrap,
+		Attrs: ElementAttributes{
+			Width:      200,
+			Height:     200,
+			Direction:  Row,
+			Justify:    JustifyStart,
+			AlignItems: AlignItemStart,
+			Wrap:       Wrap,
+		},
 	}
 
-	mocks := [3]mockHandler{}
-	flex.AddChild(&View{Width: 100, Height: 100, Handler: &mocks[0]})
-	flex.AddChild(&View{Width: 100, Height: 100, Handler: &mocks[1]})
-	flex.AddChild(&View{Width: 100, Height: 100, Handler: &mocks[2]})
+	mocks := [3]*mockHandler{}
+	for i := 0; i < 3; i++ {
+		mocks[i] = NewMockHandler()
+		flex.AddChild(&View{Attrs: ElementAttributes{Width: 100, Height: 100}, Handler: mocks[i].Handler})
+	}
 
 	flex.Update()
 	flex.Draw(nil)
@@ -116,20 +129,22 @@ func TestFlexWrap(t *testing.T) {
 func TestAbsolutePos(t *testing.T) {
 	left, top := 20, 30
 	f1 := &View{
-		Width:      100,
-		Height:     200,
-		Left:       left,
-		Top:        top,
-		Position:   PositionAbsolute,
-		Direction:  Row,
-		Justify:    JustifyCenter,
-		AlignItems: AlignItemCenter,
-		Wrap:       Wrap,
+		Attrs: ElementAttributes{
+			Width:      100,
+			Height:     200,
+			Left:       left,
+			Top:        top,
+			Position:   PositionAbsolute,
+			Direction:  Row,
+			Justify:    JustifyCenter,
+			AlignItems: AlignItemCenter,
+			Wrap:       Wrap,
+		},
 	}
 
-	mock := mockHandler{}
+	mock := NewMockHandler()
 
-	f1.AddChild(&View{Width: 30, Height: 40, Handler: &mock})
+	f1.AddChild(&View{Attrs: ElementAttributes{Width: 30, Height: 40}, Handler: mock.Handler})
 	f1.Update()
 	f1.Draw(nil)
 
@@ -159,10 +174,10 @@ func TestAbsolutePos(t *testing.T) {
 }
 
 func TestAbsolutePosRightBottom(t *testing.T) {
-	mock := mockHandler{}
+	mock := NewMockHandler()
 
-	f1 := (&View{Width: 100, Height: 100}).addChild(
-		&View{Position: PositionAbsolute, Width: 10, Height: 10, Right: Int(40), Bottom: Int(50), Handler: &mock},
+	f1 := (&View{Attrs: ElementAttributes{Width: 100, Height: 100}}).addChild(
+		&View{Attrs: ElementAttributes{Position: PositionAbsolute, Width: 10, Height: 10, Right: Int(40), Bottom: Int(50)}, Handler: mock.Handler},
 	)
 
 	f1.Update()
@@ -173,31 +188,41 @@ func TestAbsolutePosRightBottom(t *testing.T) {
 
 func TestAbsolutePosNested(t *testing.T) {
 	f1 := &View{
-		Width:      150,
-		Height:     200,
-		Direction:  Row,
-		Justify:    JustifyStart,
-		AlignItems: AlignItemCenter,
-		Wrap:       Wrap,
+		Attrs: ElementAttributes{
+			Width:      150,
+			Height:     200,
+			Direction:  Row,
+			Justify:    JustifyStart,
+			AlignItems: AlignItemCenter,
+			Wrap:       Wrap,
+		},
 	}
 
 	f2 := &View{
-		Width:      50,
-		Height:     150,
-		Left:       100,
-		Top:        50,
-		Position:   PositionAbsolute,
-		Direction:  Row,
-		Justify:    JustifyCenter,
-		AlignItems: AlignItemCenter,
-		Wrap:       Wrap,
+		Attrs: ElementAttributes{
+			Width:      50,
+			Height:     150,
+			Left:       100,
+			Top:        50,
+			Position:   PositionAbsolute,
+			Direction:  Row,
+			Justify:    JustifyCenter,
+			AlignItems: AlignItemCenter,
+			Wrap:       Wrap,
+		},
 	}
 
 	f1.AddChild(f2)
 
-	mock := mockHandler{}
+	mock := NewMockHandler()
 
-	f2.AddChild(&View{Width: 30, Height: 40, Handler: &mock})
+	f2.AddChild(&View{
+		Attrs: ElementAttributes{
+			Width:  30,
+			Height: 40,
+		},
+		Handler: mock.Handler,
+	})
 	f1.Update()
 	f1.Draw(nil)
 
@@ -230,32 +255,38 @@ func TestAbsolutePosNested(t *testing.T) {
 
 func TestNesting(t *testing.T) {
 	parent := &View{
-		Width:      300,
-		Height:     500,
-		Direction:  Column,
-		Justify:    JustifyCenter,
-		AlignItems: AlignItemCenter,
-		Left:       100,
-		Top:        50,
-		Position:   PositionAbsolute,
+		Attrs: ElementAttributes{
+			Width:      300,
+			Height:     500,
+			Direction:  Column,
+			Justify:    JustifyCenter,
+			AlignItems: AlignItemCenter,
+			Left:       100,
+			Top:        50,
+			Position:   PositionAbsolute,
+		},
 	}
 
 	child := &View{
-		Width:      100,
-		Height:     200,
-		Direction:  Column,
-		Justify:    JustifyEnd,
-		AlignItems: AlignItemEnd,
+		Attrs: ElementAttributes{
+			Width:      100,
+			Height:     200,
+			Direction:  Column,
+			Justify:    JustifyEnd,
+			AlignItems: AlignItemEnd,
+		},
 	}
 
 	parent.AddChild(child)
 
-	item := &mockHandler{}
+	item := NewMockHandler()
 
 	child.AddChild(&View{
-		Width:   30,
-		Height:  40,
-		Handler: item,
+		Attrs: ElementAttributes{
+			Width:  30,
+			Height: 40,
+		},
+		Handler: item.Handler,
 	})
 
 	parent.Update()
@@ -302,71 +333,87 @@ func TestMargin(t *testing.T) {
 	}{
 		{
 			Flex: &View{
-				Width:      100,
-				Height:     100,
-				Direction:  Row,
-				Justify:    JustifyCenter,
-				AlignItems: AlignItemCenter,
+				Attrs: ElementAttributes{
+					Width:      100,
+					Height:     100,
+					Direction:  Row,
+					Justify:    JustifyCenter,
+					AlignItems: AlignItemCenter,
+				},
 			},
 			View: &View{
-				Width:      50,
-				Height:     50,
-				MarginLeft: 20,
+				Attrs: ElementAttributes{
+					Width:      50,
+					Height:     50,
+					MarginLeft: 20,
+				},
 			},
 			Want: image.Rect(25+10, 25, 75+10, 75),
 		},
 		{
 			Flex: &View{
-				Width:      100,
-				Height:     100,
-				Direction:  Column,
-				Justify:    JustifyCenter,
-				AlignItems: AlignItemCenter,
+				Attrs: ElementAttributes{
+					Width:      100,
+					Height:     100,
+					Direction:  Column,
+					Justify:    JustifyCenter,
+					AlignItems: AlignItemCenter,
+				},
 			},
 			View: &View{
-				Width:     50,
-				Height:    50,
-				MarginTop: 20,
+				Attrs: ElementAttributes{
+					Width:     50,
+					Height:    50,
+					MarginTop: 20,
+				},
 			},
 			Want: image.Rect(25, 25+10, 75, 75+10),
 		},
 		{
 			Flex: &View{
-				Width:      100,
-				Height:     100,
-				Direction:  Row,
-				Justify:    JustifyEnd,
-				AlignItems: AlignItemStart,
+				Attrs: ElementAttributes{
+					Width:      100,
+					Height:     100,
+					Direction:  Row,
+					Justify:    JustifyEnd,
+					AlignItems: AlignItemStart,
+				},
 			},
 			View: &View{
-				Width:       50,
-				Height:      50,
-				MarginTop:   10,
-				MarginRight: 10,
+				Attrs: ElementAttributes{
+					Width:       50,
+					Height:      50,
+					MarginTop:   10,
+					MarginRight: 10,
+				},
 			},
 			Want: image.Rect(40, 10, 90, 60),
 		},
 		{
 			Flex: &View{
-				Width:      100,
-				Height:     100,
-				Direction:  Column,
-				Justify:    JustifyEnd,
-				AlignItems: AlignItemEnd,
+				Attrs: ElementAttributes{
+					Width:      100,
+					Height:     100,
+					Direction:  Column,
+					Justify:    JustifyEnd,
+					AlignItems: AlignItemEnd,
+				},
 			},
 			View: &View{
-				Width:        50,
-				Height:       50,
-				MarginRight:  10,
-				MarginBottom: 10,
+				Attrs: ElementAttributes{
+					Width:        50,
+					Height:       50,
+					MarginRight:  10,
+					MarginBottom: 10,
+				},
 			},
 			Want: image.Rect(40, 40, 90, 90),
 		},
 	}
 
 	for _, tt := range tests {
-		mock := &mockHandler{}
-		tt.View.Handler = mock
+		mock := NewMockHandler()
+		tt.View.Handler = mock.Handler
 		tt.Flex.AddChild(tt.View)
 		tt.Flex.Update()
 		tt.Flex.Draw(nil)
@@ -377,30 +424,39 @@ func TestMargin(t *testing.T) {
 
 func TestMarginedItemPosition(t *testing.T) {
 	flex := &View{
-		Width:      200,
-		Height:     200,
-		Direction:  Column,
-		Justify:    JustifyStart,
-		AlignItems: AlignItemCenter,
+		Attrs: ElementAttributes{
+			Width:      200,
+			Height:     200,
+			Direction:  Column,
+			Justify:    JustifyStart,
+			AlignItems: AlignItemCenter,
+		},
 	}
 
-	mocks := [2]mockHandler{}
+	mocks := [2]*mockHandler{}
+	for i := 0; i < 2; i++ {
+		mocks[i] = NewMockHandler()
+	}
 
 	view1 := &View{
-		Width:      200,
-		Height:     50,
-		MarginTop:  10,
-		Direction:  Column,
-		Justify:    JustifyStart,
-		AlignItems: AlignItemCenter,
-		Handler:    &mocks[0],
+		Attrs: ElementAttributes{
+			Width:      200,
+			Height:     50,
+			MarginTop:  10,
+			Direction:  Column,
+			Justify:    JustifyStart,
+			AlignItems: AlignItemCenter,
+		},
+		Handler: mocks[0].Handler,
 	}
-	flex.addChild(view1)
+	flex.AddChild(view1)
 
 	view2 := &View{
-		Width:   200,
-		Height:  10,
-		Handler: &mocks[1],
+		Attrs: ElementAttributes{
+			Width:  200,
+			Height: 10,
+		},
+		Handler: mocks[1].Handler,
 	}
 	view1.addChild(view2)
 
@@ -413,26 +469,31 @@ func TestMarginedItemPosition(t *testing.T) {
 
 func TestMultiMarginedWrapRowItems(t *testing.T) {
 	flex := &View{
-		Width:        200,
-		Height:       200,
-		Direction:    Row,
-		Justify:      JustifyStart,
-		AlignItems:   AlignItemCenter,
-		AlignContent: AlignContentCenter,
-		Wrap:         Wrap,
+		Attrs: ElementAttributes{
+			Width:        200,
+			Height:       200,
+			Direction:    Row,
+			Justify:      JustifyStart,
+			AlignItems:   AlignItemCenter,
+			AlignContent: AlignContentCenter,
+			Wrap:         Wrap,
+		},
 	}
 
-	mocks := [4]mockHandler{}
+	mocks := [4]*mockHandler{}
 	view := View{
-		Width:      85,
-		Height:     85,
-		MarginTop:  10,
-		MarginLeft: 10,
+		Attrs: ElementAttributes{
+			Width:      85,
+			Height:     85,
+			MarginTop:  10,
+			MarginLeft: 10,
+		},
 	}
 
 	for i := 0; i < 4; i++ {
+		mocks[i] = NewMockHandler()
 		v := view
-		v.Handler = &mocks[i]
+		v.Handler = mocks[i].Handler
 		flex.AddChild(&v)
 	}
 
@@ -449,21 +510,26 @@ func TestRemoveChild(t *testing.T) {
 	w, h := 100, 100
 
 	flex := &View{
-		Width:      w,
-		Height:     h,
-		Direction:  Row,
-		Justify:    JustifyCenter,
-		AlignItems: AlignItemCenter,
+		Attrs: ElementAttributes{
+			Width:      w,
+			Height:     h,
+			Direction:  Row,
+			Justify:    JustifyCenter,
+			AlignItems: AlignItemCenter,
+		},
 	}
 
-	mocks := [2]mockHandler{}
+	mocks := [2]*mockHandler{}
 	views := [2]*View{}
 
 	for i := 0; i < 2; i++ {
+		mocks[i] = NewMockHandler()
 		views[i] = &View{
-			Width:   50,
-			Height:  50,
-			Handler: &mocks[i],
+			Attrs: ElementAttributes{
+				Width:  50,
+				Height: 50,
+			},
+			Handler: mocks[i].Handler,
 		}
 		flex.AddChild(views[i])
 	}
@@ -483,18 +549,23 @@ func TestRemoveChild(t *testing.T) {
 
 func TestAutoExpanding(t *testing.T) {
 	flex := &View{
-		Width:      1000,
-		Height:     1000,
-		Direction:  Row,
-		Justify:    JustifyCenter,
-		AlignItems: AlignItemStretch,
+		Attrs: ElementAttributes{
+			Width:      1000,
+			Height:     1000,
+			Direction:  Row,
+			Justify:    JustifyCenter,
+			AlignItems: AlignItemStretch,
+		},
 	}
 
-	mocks := [2]mockHandler{}
+	mocks := [2]*mockHandler{}
 	for i := 0; i < 2; i++ {
+		mocks[i] = NewMockHandler()
 		v := &View{
-			Grow:    1,
-			Handler: &mocks[i],
+			Attrs: ElementAttributes{
+				Grow: 1,
+			},
+			Handler: mocks[i].Handler,
 		}
 		flex.AddChild(v)
 	}
@@ -508,36 +579,45 @@ func TestAutoExpanding(t *testing.T) {
 
 func TestNestedChildrenGrow(t *testing.T) {
 	flex := &View{
-		Width:      1000,
-		Height:     1000,
-		Direction:  Row,
-		Justify:    JustifyCenter,
-		AlignItems: AlignItemStretch,
+		Attrs: ElementAttributes{
+			Width:      1000,
+			Height:     1000,
+			Direction:  Row,
+			Justify:    JustifyCenter,
+			AlignItems: AlignItemStretch,
+		},
 	}
 
 	child := &View{
-		Direction:  Column,
-		Justify:    JustifyCenter,
-		AlignItems: AlignItemStretch,
-		Grow:       1,
+		Attrs: ElementAttributes{
+			Direction:  Column,
+			Justify:    JustifyCenter,
+			AlignItems: AlignItemStretch,
+			Grow:       1,
+		},
 	}
 
 	flex.AddChild(child)
 
 	child2 := &View{
-		Direction:  Row,
-		Justify:    JustifyCenter,
-		AlignItems: AlignItemStretch,
-		Grow:       1,
+		Attrs: ElementAttributes{
+			Direction:  Row,
+			Justify:    JustifyCenter,
+			AlignItems: AlignItemStretch,
+			Grow:       1,
+		},
 	}
 
 	child.AddChild(child2)
 
-	mocks := [2]mockHandler{}
+	mocks := [2]*mockHandler{}
 	for i := 0; i < 2; i++ {
+		mocks[i] = NewMockHandler()
 		v := &View{
-			Grow:    1,
-			Handler: &mocks[i],
+			Attrs: ElementAttributes{
+				Grow: 1,
+			},
+			Handler: mocks[i].Handler,
 		}
 		child2.AddChild(v)
 	}
@@ -551,28 +631,34 @@ func TestNestedChildrenGrow(t *testing.T) {
 
 func TestNestedChildGrow(t *testing.T) {
 	flex := &View{
-		Width:      1000,
-		Height:     1000,
-		Direction:  Column,
-		AlignItems: AlignItemStretch,
-		Justify:    JustifyCenter,
-	}
-
-	mock := mockHandler{}
-
-	flex.AddChild(
-		(&View{
+		Attrs: ElementAttributes{
+			Width:      1000,
+			Height:     1000,
 			Direction:  Column,
 			AlignItems: AlignItemStretch,
 			Justify:    JustifyCenter,
-			Grow:       1,
-		}).AddChild(
-			&View{
-				Direction:  Row,
+		},
+	}
+
+	mock := NewMockHandler()
+
+	flex.AddChild(
+		(&View{
+			Attrs: ElementAttributes{
+				Direction:  Column,
 				AlignItems: AlignItemStretch,
 				Justify:    JustifyCenter,
 				Grow:       1,
-				Handler:    &mock,
+			},
+		}).AddChild(
+			&View{
+				Attrs: ElementAttributes{
+					Direction:  Row,
+					AlignItems: AlignItemStretch,
+					Justify:    JustifyCenter,
+					Grow:       1,
+				},
+				Handler: mock.Handler,
 			},
 		),
 	)
@@ -585,30 +671,36 @@ func TestNestedChildGrow(t *testing.T) {
 
 func TestMerginWithChild(t *testing.T) {
 	flex := &View{
-		Width:      1000,
-		Height:     1000,
-		Direction:  Column,
-		AlignItems: AlignItemEnd,
-		Justify:    JustifyEnd,
+		Attrs: ElementAttributes{
+			Width:      1000,
+			Height:     1000,
+			Direction:  Column,
+			AlignItems: AlignItemEnd,
+			Justify:    JustifyEnd,
+		},
 	}
 
-	mock1 := mockHandler{}
-	mock2 := mockHandler{}
+	mock1 := NewMockHandler()
+	mock2 := NewMockHandler()
 
 	flex.AddChild(
 		(&View{
-			MarginRight:  50,
-			MarginBottom: 100,
-			Direction:    Column,
-			AlignItems:   AlignItemEnd,
-			Justify:      JustifyEnd,
-			Handler:      &mock1,
+			Attrs: ElementAttributes{
+				MarginRight:  50,
+				MarginBottom: 100,
+				Direction:    Column,
+				AlignItems:   AlignItemEnd,
+				Justify:      JustifyEnd,
+			},
+			Handler: mock1.Handler,
 		}).AddChild(
 			&View{
-				Grow:    1,
-				Width:   100,
-				Height:  100,
-				Handler: &mock2,
+				Attrs: ElementAttributes{
+					Grow:   1,
+					Width:  100,
+					Height: 100,
+				},
+				Handler: mock2.Handler,
 			},
 		),
 	)
@@ -622,28 +714,34 @@ func TestMerginWithChild(t *testing.T) {
 
 func TestStretchAndMargin(t *testing.T) {
 	flex := &View{
-		Width:      1000,
-		Height:     1000,
-		AlignItems: AlignItemStretch,
+		Attrs: ElementAttributes{
+			Width:      1000,
+			Height:     1000,
+			AlignItems: AlignItemStretch,
+		},
 	}
 
-	mock1 := mockHandler{}
-	mock2 := mockHandler{}
+	mock1 := NewMockHandler()
+	mock2 := NewMockHandler()
 
 	flex.AddChild(
 		(&View{
-			MarginRight:  50,
-			MarginBottom: 100,
-			Grow:         1,
-			Direction:    Column,
-			AlignItems:   AlignItemEnd,
-			Justify:      JustifyEnd,
-			Handler:      &mock1,
+			Attrs: ElementAttributes{
+				MarginRight:  50,
+				MarginBottom: 100,
+				Grow:         1,
+				Direction:    Column,
+				AlignItems:   AlignItemEnd,
+				Justify:      JustifyEnd,
+			},
+			Handler: mock1.Handler,
 		}).AddChild(
 			&View{
-				Width:   100,
-				Height:  100,
-				Handler: &mock2,
+				Attrs: ElementAttributes{
+					Width:  100,
+					Height: 100,
+				},
+				Handler: mock2.Handler,
 			},
 		),
 	)
@@ -657,24 +755,30 @@ func TestStretchAndMargin(t *testing.T) {
 
 func TestStretchAndMarginItems(t *testing.T) {
 	flex := &View{
-		Width:      1000,
-		Height:     1000,
-		AlignItems: AlignItemStretch,
+		Attrs: ElementAttributes{
+			Width:      1000,
+			Height:     1000,
+			AlignItems: AlignItemStretch,
+		},
 	}
 
-	mock1 := mockHandler{}
-	mock2 := mockHandler{}
+	mock1 := NewMockHandler()
+	mock2 := NewMockHandler()
 
 	flex.AddChild(
 		&View{
-			MarginRight: 50,
-			Grow:        1,
-			Handler:     &mock1,
+			Attrs: ElementAttributes{
+				MarginRight: 50,
+				Grow:        1,
+			},
+			Handler: mock1.Handler,
 		},
 		&View{
-			MarginLeft: 50,
-			Grow:       1,
-			Handler:    &mock2,
+			Attrs: ElementAttributes{
+				MarginLeft: 50,
+				Grow:       1,
+			},
+			Handler: mock2.Handler,
 		},
 	)
 
@@ -687,28 +791,34 @@ func TestStretchAndMarginItems(t *testing.T) {
 
 func TestStretchAndMarginItemsMain(t *testing.T) {
 	flex := &View{
-		Width:      1000,
-		Height:     1000,
-		AlignItems: AlignItemStretch,
-		Wrap:       Wrap,
-		Direction:  Column,
+		Attrs: ElementAttributes{
+			Width:      1000,
+			Height:     1000,
+			AlignItems: AlignItemStretch,
+			Wrap:       Wrap,
+			Direction:  Column,
+		},
 	}
 
-	mock1 := mockHandler{}
-	mock2 := mockHandler{}
+	mock1 := NewMockHandler()
+	mock2 := NewMockHandler()
 
 	flex.AddChild(
 		&View{
-			Width:        1000,
-			MarginBottom: 50,
-			Grow:         1,
-			Handler:      &mock1,
+			Attrs: ElementAttributes{
+				Width:        1000,
+				MarginBottom: 50,
+				Grow:         1,
+			},
+			Handler: mock1.Handler,
 		},
 		&View{
-			Width:        1000,
-			MarginBottom: 50,
-			Grow:         1,
-			Handler:      &mock2,
+			Attrs: ElementAttributes{
+				Width:        1000,
+				MarginBottom: 50,
+				Grow:         1,
+			},
+			Handler: mock2.Handler,
 		},
 	)
 
@@ -721,29 +831,35 @@ func TestStretchAndMarginItemsMain(t *testing.T) {
 
 func TestStretchAndMarginItemsCross(t *testing.T) {
 	flex := &View{
-		Width:        1000,
-		Height:       1000,
-		AlignItems:   AlignItemStretch,
-		AlignContent: AlignContentStretch,
-		Wrap:         Wrap,
-		Direction:    Row,
+		Attrs: ElementAttributes{
+			Width:        1000,
+			Height:       1000,
+			AlignItems:   AlignItemStretch,
+			AlignContent: AlignContentStretch,
+			Wrap:         Wrap,
+			Direction:    Row,
+		},
 	}
 
-	mock1 := mockHandler{}
-	mock2 := mockHandler{}
+	mock1 := NewMockHandler()
+	mock2 := NewMockHandler()
 
 	flex.AddChild(
 		&View{
-			Width:        1000,
-			MarginBottom: 50,
-			Grow:         1,
-			Handler:      &mock1,
+			Attrs: ElementAttributes{
+				Width:        1000,
+				MarginBottom: 50,
+				Grow:         1,
+			},
+			Handler: mock1.Handler,
 		},
 		&View{
-			Width:        1000,
-			MarginBottom: 50,
-			Grow:         1,
-			Handler:      &mock2,
+			Attrs: ElementAttributes{
+				Width:        1000,
+				MarginBottom: 50,
+				Grow:         1,
+			},
+			Handler: mock2.Handler,
 		},
 	)
 
@@ -756,35 +872,43 @@ func TestStretchAndMarginItemsCross(t *testing.T) {
 
 func TestNestedFlex(t *testing.T) {
 	flex := &View{
-		Width:      1000,
-		Height:     1000,
-		Justify:    JustifyCenter,
-		AlignItems: AlignItemCenter,
+		Attrs: ElementAttributes{
+			Width:      1000,
+			Height:     1000,
+			Justify:    JustifyCenter,
+			AlignItems: AlignItemCenter,
+		},
 	}
 
-	mock1 := mockHandler{}
-	mock2 := mockHandler{}
-	mock3 := mockHandler{}
+	mock1 := NewMockHandler()
+	mock2 := NewMockHandler()
+	mock3 := NewMockHandler()
 
 	flex.AddChild(
 		(&View{
-			Width:      800,
-			Height:     800,
-			Justify:    JustifyCenter,
-			AlignItems: AlignItemCenter,
-			Handler:    &mock1,
-		}).AddChild(
-			(&View{
-				Width:      100,
-				Height:     100,
+			Attrs: ElementAttributes{
+				Width:      800,
+				Height:     800,
 				Justify:    JustifyCenter,
 				AlignItems: AlignItemCenter,
-				Handler:    &mock2,
+			},
+			Handler: mock1.Handler,
+		}).AddChild(
+			(&View{
+				Attrs: ElementAttributes{
+					Width:      100,
+					Height:     100,
+					Justify:    JustifyCenter,
+					AlignItems: AlignItemCenter,
+				},
+				Handler: mock2.Handler,
 			}).AddChild(
 				&View{
-					Width:   10,
-					Height:  10,
-					Handler: &mock3,
+					Attrs: ElementAttributes{
+						Width:  10,
+						Height: 10,
+					},
+					Handler: mock3.Handler,
 				},
 			),
 		),
@@ -800,33 +924,41 @@ func TestNestedFlex(t *testing.T) {
 
 func TestAbsoluteViewChildren(t *testing.T) {
 	flex := &View{
-		Width:      1000,
-		Height:     1000,
-		Justify:    JustifyCenter,
-		AlignItems: AlignItemCenter,
+		Attrs: ElementAttributes{
+			Width:      1000,
+			Height:     1000,
+			Justify:    JustifyCenter,
+			AlignItems: AlignItemCenter,
+		},
 	}
 
-	mock1 := mockHandler{}
-	mock2 := mockHandler{}
-	mock3 := mockHandler{}
+	mock1 := NewMockHandler()
+	mock2 := NewMockHandler()
+	mock3 := NewMockHandler()
 
 	flex.AddChild(
 		(&View{
-			Width:   800,
-			Height:  800,
-			Handler: &mock1,
+			Attrs: ElementAttributes{
+				Width:  800,
+				Height: 800,
+			},
+			Handler: mock1.Handler,
 		}).AddChild(
 			(&View{
-				Width:    100,
-				Height:   100,
-				Position: PositionAbsolute,
-				Handler:  &mock2,
+				Attrs: ElementAttributes{
+					Width:    100,
+					Height:   100,
+					Position: PositionAbsolute,
+				},
+				Handler: mock2.Handler,
 			}).AddChild(
 				&View{
-					Width:    10,
-					Height:   10,
-					Position: PositionAbsolute,
-					Handler:  &mock3,
+					Attrs: ElementAttributes{
+						Width:    10,
+						Height:   10,
+						Position: PositionAbsolute,
+					},
+					Handler: mock3.Handler,
 				},
 			),
 		),
@@ -842,38 +974,46 @@ func TestAbsoluteViewChildren(t *testing.T) {
 
 func TestAutoHeightCalculation(t *testing.T) {
 	flex := &View{
-		Width:      1000,
-		Height:     1000,
-		Grow:       0,
-		Shrink:     0,
-		AlignItems: AlignItemStart,
-		Justify:    JustifyStart,
-		Direction:  Column,
+		Attrs: ElementAttributes{
+			Width:      1000,
+			Height:     1000,
+			Grow:       0,
+			Shrink:     0,
+			AlignItems: AlignItemStart,
+			Justify:    JustifyStart,
+			Direction:  Column,
+		},
 	}
 
-	mock1 := mockHandler{}
-	mock2 := mockHandler{}
+	mock1 := NewMockHandler()
+	mock2 := NewMockHandler()
 
 	firstRow := &View{
-		Direction: Column,
-		Grow:      0,
-		Shrink:    0,
-		Width:     100,
-		Handler:   &mock1,
+		Attrs: ElementAttributes{
+			Direction: Column,
+			Grow:      0,
+			Shrink:    0,
+			Width:     100,
+		},
+		Handler: mock1.Handler,
 	}
 
 	firstRow.AddChild(&View{
-		Width:  100,
-		Height: 100,
+		Attrs: ElementAttributes{
+			Width:  100,
+			Height: 100,
+		},
 	})
 
 	secondRow := &View{
-		Direction: Row,
-		Width:     200,
-		Height:    200,
-		Grow:      0,
-		Shrink:    0,
-		Handler:   &mock2,
+		Attrs: ElementAttributes{
+			Direction: Row,
+			Width:     200,
+			Height:    200,
+			Grow:      0,
+			Shrink:    0,
+		},
+		Handler: mock2.Handler,
 	}
 
 	flex.AddChild(
@@ -890,24 +1030,30 @@ func TestAutoHeightCalculation(t *testing.T) {
 
 func TestWidthInPctRow(t *testing.T) {
 	flex := &View{
-		Width:      500,
-		Height:     500,
-		Direction:  Row,
-		Justify:    JustifyEnd,
-		AlignItems: AlignItemEnd,
+		Attrs: ElementAttributes{
+			Width:      500,
+			Height:     500,
+			Direction:  Row,
+			Justify:    JustifyEnd,
+			AlignItems: AlignItemEnd,
+		},
 	}
 
-	mock := mockHandler{}
+	mock := NewMockHandler()
 
 	flex.AddChild(
 		&View{
-			WidthInPct: 100,
-			Height:     100,
-			Handler:    &mock,
+			Attrs: ElementAttributes{
+				WidthInPct: 100,
+				Height:     100,
+			},
+			Handler: mock.Handler,
 		},
 		&View{
-			Width:  50,
-			Height: 100,
+			Attrs: ElementAttributes{
+				Width:  50,
+				Height: 100,
+			},
 		},
 	)
 
@@ -919,24 +1065,30 @@ func TestWidthInPctRow(t *testing.T) {
 
 func TestWidthInPctCol(t *testing.T) {
 	flex := &View{
-		Width:      500,
-		Height:     500,
-		Direction:  Column,
-		Justify:    JustifyEnd,
-		AlignItems: AlignItemEnd,
+		Attrs: ElementAttributes{
+			Width:      500,
+			Height:     500,
+			Direction:  Column,
+			Justify:    JustifyEnd,
+			AlignItems: AlignItemEnd,
+		},
 	}
 
-	mock := mockHandler{}
+	mock := NewMockHandler()
 
 	flex.AddChild(
 		&View{
-			Width:  50,
-			Height: 100,
+			Attrs: ElementAttributes{
+				Width:  50,
+				Height: 100,
+			},
 		},
 		&View{
-			WidthInPct: 100,
-			Height:     100,
-			Handler:    &mock,
+			Attrs: ElementAttributes{
+				WidthInPct: 100,
+				Height:     100,
+			},
+			Handler: mock.Handler,
 		},
 	)
 
@@ -948,24 +1100,30 @@ func TestWidthInPctCol(t *testing.T) {
 
 func TestHeightInPctRow(t *testing.T) {
 	flex := &View{
-		Width:      500,
-		Height:     500,
-		Direction:  Row,
-		Justify:    JustifyEnd,
-		AlignItems: AlignItemEnd,
+		Attrs: ElementAttributes{
+			Width:      500,
+			Height:     500,
+			Direction:  Row,
+			Justify:    JustifyEnd,
+			AlignItems: AlignItemEnd,
+		},
 	}
 
-	mock := mockHandler{}
+	mock := NewMockHandler()
 
 	flex.AddChild(
 		&View{
-			Width:       100,
-			HeightInPct: 100,
-			Handler:     &mock,
+			Attrs: ElementAttributes{
+				Width:       100,
+				HeightInPct: 100,
+			},
+			Handler: mock.Handler,
 		},
 		&View{
-			Width:  50,
-			Height: 100,
+			Attrs: ElementAttributes{
+				Width:  50,
+				Height: 100,
+			},
 		},
 	)
 
@@ -977,24 +1135,30 @@ func TestHeightInPctRow(t *testing.T) {
 
 func TestHeightInPctCol(t *testing.T) {
 	flex := &View{
-		Width:      500,
-		Height:     500,
-		Direction:  Column,
-		Justify:    JustifyEnd,
-		AlignItems: AlignItemEnd,
+		Attrs: ElementAttributes{
+			Width:      500,
+			Height:     500,
+			Direction:  Column,
+			Justify:    JustifyEnd,
+			AlignItems: AlignItemEnd,
+		},
 	}
 
-	mock := mockHandler{}
+	mock := NewMockHandler()
 
 	flex.AddChild(
 		&View{
-			Width:  50,
-			Height: 100,
+			Attrs: ElementAttributes{
+				Width:  50,
+				Height: 100,
+			},
 		},
 		&View{
-			Width:       100,
-			HeightInPct: 100,
-			Handler:     &mock,
+			Attrs: ElementAttributes{
+				Width:       100,
+				HeightInPct: 100,
+			},
+			Handler: mock.Handler,
 		},
 	)
 
@@ -1006,26 +1170,32 @@ func TestHeightInPctCol(t *testing.T) {
 
 func TestShrink(t *testing.T) {
 	w, h, items := 128, 64, 5
-	mock := mockHandler{}
+	mock := NewMockHandler()
 
 	root := &View{
-		Direction:  Row,
-		AlignItems: AlignItemCenter,
+		Attrs: ElementAttributes{
+			Direction:  Row,
+			AlignItems: AlignItemCenter,
+		},
 	}
 
 	palette := &View{
-		Width:     w,
-		Shrink:    1,
-		Direction: Column,
-		Justify:   JustifyCenter,
-		Handler:   &mock,
+		Attrs: ElementAttributes{
+			Width:     w,
+			Shrink:    1,
+			Direction: Column,
+			Justify:   JustifyCenter,
+		},
+		Handler: mock.Handler,
 	}
 	palette.AddTo(root)
 
 	for i := 0; i < items; i++ {
 		bar := &View{
-			Width:  w,
-			Height: h,
+			Attrs: ElementAttributes{
+				Width:  w,
+				Height: h,
+			},
 		}
 		bar.AddTo(palette)
 	}
@@ -1037,8 +1207,8 @@ func TestShrink(t *testing.T) {
 }
 
 func flexItemBounds(parent *View, child *View) image.Rectangle {
-	mock := &mockHandler{}
-	child.Handler = mock
+	mock := NewMockHandler()
+	child.Handler = mock.Handler
 
 	parent.AddChild(child)
 	parent.Update()

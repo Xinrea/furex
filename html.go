@@ -44,7 +44,7 @@ type ParseOptions struct {
 	Height int
 
 	// Handler is the handler for the root view.
-	Handler Handler
+	Handler *Handler
 }
 
 func Parse(input string, opts *ParseOptions) *View {
@@ -93,7 +93,7 @@ Loop:
 			stack.peek().AddChild(view)
 		case html.TextToken:
 			if stack.len() > 0 {
-				stack.peek().Text = strings.TrimSpace(string(z.Text()))
+				stack.peek().Attrs.Text = strings.TrimSpace(string(z.Text()))
 			}
 		case html.EndTagToken:
 			if string(tn) == "body" {
@@ -115,8 +115,9 @@ Loop:
 	// even if the view does not have any children
 	view.isDirty = true
 	if opts.Handler != nil {
-		view.Handler = opts.Handler
+		view.Handler = *opts.Handler
 	}
+
 	return view
 }
 
@@ -179,8 +180,8 @@ func processTag(z *html.Tokenizer, tagName string, opts *ParseOptions, depth int
 		processRootView(view, opts)
 	}
 
-	view.TagName = tagName
-	view.Raw = string(z.Raw())
+	view.Attrs.TagName = tagName
+	view.Attrs.Raw = string(z.Raw())
 
 	setStyleProps(view, readAttrs(z))
 
@@ -190,17 +191,17 @@ func processTag(z *html.Tokenizer, tagName string, opts *ParseOptions, depth int
 func setStyleProps(view *View, attrs attrs) {
 	parseStyle(view, attrs.style)
 
-	view.ID = attrs.id
-	view.Attrs = attrs.miscs
-	view.Hidden = attrs.hidden
+	view.Attrs.ID = attrs.id
+	view.Attrs.ExtraAttrs = attrs.miscs
+	view.Attrs.Hidden = attrs.hidden
 }
 
 func processRootView(view *View, opts *ParseOptions) {
 	if opts.Width != 0 {
-		view.Width = opts.Width
+		view.Attrs.Width = opts.Width
 	}
 	if opts.Height != 0 {
-		view.Height = opts.Height
+		view.Attrs.Height = opts.Height
 	}
 }
 
@@ -227,8 +228,7 @@ func component(name string, m ComponentsMap, v *View) bool {
 		*v = *c()
 		return true
 	}
-	v.Handler = c
-	return true
+	return false
 }
 
 func parseStyle(view *View, style string) {
@@ -264,28 +264,28 @@ func Int(i int) *int { return &i }
 var styleMapper = map[string]mapper[View]{
 	"left": {
 		parseFunc: parseNumber,
-		setFunc:   setFunc(func(v *View, val int) { v.Left = val }),
+		setFunc:   setFunc(func(v *View, val int) { v.Attrs.Left = val }),
 	},
 	"right": {
 		parseFunc: parseNumber,
-		setFunc:   setFunc(func(v *View, val int) { v.Right = Int(val) }),
+		setFunc:   setFunc(func(v *View, val int) { v.Attrs.Right = Int(val) }),
 	},
 	"top": {
 		parseFunc: parseNumber,
-		setFunc:   setFunc(func(v *View, val int) { v.Top = val }),
+		setFunc:   setFunc(func(v *View, val int) { v.Attrs.Top = val }),
 	},
 	"bottom": {
 		parseFunc: parseNumber,
-		setFunc:   setFunc(func(v *View, val int) { v.Bottom = Int(val) }),
+		setFunc:   setFunc(func(v *View, val int) { v.Attrs.Bottom = Int(val) }),
 	},
 	"width": {
 		parseFunc: parseLength,
 		setFunc: setFunc(func(v *View, val cssLength) {
 			switch val.unit {
 			case cssUnitPx:
-				v.Width = int(val.val)
+				v.Attrs.Width = int(val.val)
 			case cssUnitPct:
-				v.WidthInPct = val.val
+				v.Attrs.WidthInPct = val.val
 			}
 		}),
 	},
@@ -294,83 +294,83 @@ var styleMapper = map[string]mapper[View]{
 		setFunc: setFunc(func(v *View, val cssLength) {
 			switch val.unit {
 			case cssUnitPx:
-				v.Height = int(val.val)
+				v.Attrs.Height = int(val.val)
 			case cssUnitPct:
-				v.HeightInPct = val.val
+				v.Attrs.HeightInPct = val.val
 			}
 		}),
 	},
 	"margin-left": {
 		parseFunc: parseNumber,
-		setFunc:   setFunc(func(v *View, val int) { v.MarginLeft = val }),
+		setFunc:   setFunc(func(v *View, val int) { v.Attrs.MarginLeft = val }),
 	},
 	"margin-top": {
 		parseFunc: parseNumber,
-		setFunc:   setFunc(func(v *View, val int) { v.MarginTop = val }),
+		setFunc:   setFunc(func(v *View, val int) { v.Attrs.MarginTop = val }),
 	},
 	"margin-right": {
 		parseFunc: parseNumber,
-		setFunc:   setFunc(func(v *View, val int) { v.MarginRight = val }),
+		setFunc:   setFunc(func(v *View, val int) { v.Attrs.MarginRight = val }),
 	},
 	"margin-bottom": {
 		parseFunc: parseNumber,
-		setFunc:   setFunc(func(v *View, val int) { v.MarginBottom = val }),
+		setFunc:   setFunc(func(v *View, val int) { v.Attrs.MarginBottom = val }),
 	},
 	"position": {
 		parseFunc: parsePosition,
-		setFunc:   setFunc(func(v *View, val Position) { v.Position = val }),
+		setFunc:   setFunc(func(v *View, val Position) { v.Attrs.Position = val }),
 	},
 	"direction": {
 		parseFunc: parseDirection,
-		setFunc:   setFunc(func(v *View, val Direction) { v.Direction = val }),
+		setFunc:   setFunc(func(v *View, val Direction) { v.Attrs.Direction = val }),
 	},
 	"flex-direction": {
 		parseFunc: parseDirection,
-		setFunc:   setFunc(func(v *View, val Direction) { v.Direction = val }),
+		setFunc:   setFunc(func(v *View, val Direction) { v.Attrs.Direction = val }),
 	},
 	"flex-wrap": {
 		parseFunc: parseWrap,
-		setFunc:   setFunc(func(v *View, val FlexWrap) { v.Wrap = val }),
+		setFunc:   setFunc(func(v *View, val FlexWrap) { v.Attrs.Wrap = val }),
 	},
 	"wrap": {
 		parseFunc: parseWrap,
-		setFunc:   setFunc(func(v *View, val FlexWrap) { v.Wrap = val }),
+		setFunc:   setFunc(func(v *View, val FlexWrap) { v.Attrs.Wrap = val }),
 	},
 	"justify": {
 		parseFunc: parseJustify,
-		setFunc:   setFunc(func(v *View, val Justify) { v.Justify = val }),
+		setFunc:   setFunc(func(v *View, val Justify) { v.Attrs.Justify = val }),
 	},
 	"justify-content": {
 		parseFunc: parseJustify,
-		setFunc:   setFunc(func(v *View, val Justify) { v.Justify = val }),
+		setFunc:   setFunc(func(v *View, val Justify) { v.Attrs.Justify = val }),
 	},
 	"align-items": {
 		parseFunc: parseAlignItem,
-		setFunc:   setFunc(func(v *View, val AlignItem) { v.AlignItems = val }),
+		setFunc:   setFunc(func(v *View, val AlignItem) { v.Attrs.AlignItems = val }),
 	},
 	"align-content": {
 		parseFunc: parseAlignContent,
-		setFunc:   setFunc(func(v *View, val AlignContent) { v.AlignContent = val }),
+		setFunc:   setFunc(func(v *View, val AlignContent) { v.Attrs.AlignContent = val }),
 	},
 	"flex-grow": {
 		parseFunc: parseFloat,
-		setFunc:   setFunc(func(v *View, val float64) { v.Grow = val }),
+		setFunc:   setFunc(func(v *View, val float64) { v.Attrs.Grow = val }),
 	},
 	"grow": {
 		parseFunc: parseFloat,
-		setFunc:   setFunc(func(v *View, val float64) { v.Grow = val }),
+		setFunc:   setFunc(func(v *View, val float64) { v.Attrs.Grow = val }),
 	},
 	"flex-shrink": {
 		parseFunc: parseFloat,
-		setFunc:   setFunc(func(v *View, val float64) { v.Shrink = val }),
+		setFunc:   setFunc(func(v *View, val float64) { v.Attrs.Shrink = val }),
 	},
 	"shrink": {
 		parseFunc: parseFloat,
-		setFunc:   setFunc(func(v *View, val float64) { v.Shrink = val }),
+		setFunc:   setFunc(func(v *View, val float64) { v.Attrs.Shrink = val }),
 	},
 	"display": {
 		parseFunc: parseDisplay,
-		setFunc:   setFunc(func(v *View, val Display) { v.Display = val }),
+		setFunc:   setFunc(func(v *View, val Display) { v.Attrs.Display = val }),
 	},
 }
 

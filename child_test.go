@@ -2,6 +2,7 @@ package furex
 
 import (
 	"image"
+	"log"
 	"testing"
 	"time"
 
@@ -11,46 +12,46 @@ import (
 )
 
 func TestHandlers(t *testing.T) {
-	for scenario, fn := range map[string]func(
-		t *testing.T,
-		flex *View,
-		h *mockHandler,
-		frame image.Rectangle,
-	){
-		// "button touch": testButtonTouch,
-		// "mouse click":  testMouchClick,
-		// "mouse move":   testMouseMove,
-		"swipe": testSwipe,
-	} {
-
+	// test scenarios
+	scenarios := make(map[string]func(t *testing.T, flex *View, h *mockHandler, frame image.Rectangle))
+	// "button touch": testButtonTouch,
+	// "mouse click":  testMouchClick,
+	// "mouse move":   testMouseMove,
+	scenarios["swipe"] = testSwipe
+	for scenario, fn := range scenarios {
 		t.Run(scenario, func(t *testing.T) {
-
 			flex := &View{
-				Width:      300,
-				Height:     500,
-				Left:       100,
-				Top:        50,
-				Position:   PositionAbsolute,
-				Direction:  Column,
-				Justify:    JustifyCenter,
-				AlignItems: AlignItemCenter,
+				Attrs: ElementAttributes{
+					Width:      300,
+					Height:     500,
+					Left:       100,
+					Top:        50,
+					Position:   PositionAbsolute,
+					Direction:  Column,
+					Justify:    JustifyCenter,
+					AlignItems: AlignItemCenter,
+				},
 			}
 
 			flex2 := &View{
-				Width:      100,
-				Height:     200,
-				Direction:  Column,
-				Justify:    JustifyEnd,
-				AlignItems: AlignItemEnd,
+				Attrs: ElementAttributes{
+					Width:      100,
+					Height:     200,
+					Direction:  Column,
+					Justify:    JustifyEnd,
+					AlignItems: AlignItemEnd,
+				},
 			}
 
 			flex.AddChild(flex2)
 
-			h := &mockHandler{}
+			h := NewMockHandler()
 			flex2.AddChild(&View{
-				Width:   10,
-				Height:  20,
-				Handler: h,
+				Attrs: ElementAttributes{
+					Width:  10,
+					Height: 20,
+				},
+				Handler: h.Handler,
 			})
 
 			// 	(0,0)
@@ -89,7 +90,6 @@ func TestHandlers(t *testing.T) {
 			require.Equal(t, frame, h.Frame)
 
 			fn(t, flex, h, frame)
-
 		})
 	}
 
@@ -334,6 +334,8 @@ type mockHandler struct {
 	Frame      image.Rectangle
 	MousePoint image.Point
 	SwipeDir   SwipeDirection
+
+	Handler
 }
 
 type mockFlags struct {
@@ -346,42 +348,38 @@ type mockFlags struct {
 	IsSwiped     bool
 }
 
-var _ DrawHandler = (*mockHandler)(nil)
-var _ UpdateHandler = (*mockHandler)(nil)
-var _ ButtonHandler = (*mockHandler)(nil)
-var _ MouseHandler = (*mockHandler)(nil)
-var _ SwipeHandler = (*mockHandler)(nil)
+func NewMockHandler() *mockHandler {
+	h := &mockHandler{}
+	h.Init()
+	h.Handler.Update = func(v *View) {
+		h.IsUpdated = true
+	}
+	h.Handler.Draw = func(screen *ebiten.Image, frame image.Rectangle, v *View) {
+		h.Frame = frame
+		h.IsDrawn = true
+	}
+	h.Handler.Press = func(x, y int, t ebiten.TouchID) {
+		h.IsPressed = true
+	}
+	h.Handler.Release = func(x, y int, isCancel bool) {
+		h.IsReleased = true
+		h.IsCancel = isCancel
+	}
+	h.Handler.Mouse = func(x, y int) bool {
+		h.IsMouseMoved = true
+		h.MousePoint = image.Pt(x, y)
+		return true
+	}
+	h.Handler.Swipe = func(dir SwipeDirection) {
+		log.Println("swipe", dir)
+		h.IsSwiped = true
+		h.SwipeDir = dir
+	}
+	h.Handler.Extra = h
+	return h
+}
 
 func (h *mockHandler) Init() {
 	h.mockFlags = mockFlags{}
 	h.MousePoint = image.Pt(-1, -1)
-}
-
-func (h *mockHandler) HandleUpdate() {
-	h.IsUpdated = true
-}
-
-func (h *mockHandler) HandleDraw(screen *ebiten.Image, frame image.Rectangle) {
-	h.Frame = frame
-	h.IsDrawn = true
-}
-
-func (h *mockHandler) HandlePress(x, y int, t ebiten.TouchID) {
-	h.IsPressed = true
-}
-
-func (h *mockHandler) HandleRelease(x, y int, isCancel bool) {
-	h.IsReleased = true
-	h.IsCancel = isCancel
-}
-
-func (h *mockHandler) HandleMouse(x, y int) bool {
-	h.IsMouseMoved = true
-	h.MousePoint = image.Pt(x, y)
-	return true
-}
-
-func (h *mockHandler) HandleSwipe(dir SwipeDirection) {
-	h.IsSwiped = true
-	h.SwipeDir = dir
 }

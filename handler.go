@@ -6,34 +6,16 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-// Handler represents a component that can be added to a container.
-type Handler interface{}
-
 // Drawer represents a component that can be added to a container.
 type Drawer interface {
 	// Draw function draws the content of the component inside the frame.
-	Draw(screen *ebiten.Image, frame image.Rectangle, v *View)
+	HandleDraw(screen *ebiten.Image, frame image.Rectangle, v *View)
 }
 
 // Updater represents a component that updates by one tick.
 type Updater interface {
 	// Update updates the state of the component by one tick.
-	Update(v *View)
-}
-
-// DrawHandler represents a component that can be added to a container.
-// Deprectead: use Drawer instead
-type DrawHandler interface {
-	// HandleDraw function draws the content of the component inside the frame.
-	// The frame parameter represents the location (x,y) and size (width,height) relative to the window (0,0).
-	HandleDraw(screen *ebiten.Image, frame image.Rectangle)
-}
-
-// UpdateHandler represents a component that updates by one tick.
-// Deprectead: use Updater instead
-type UpdateHandler interface {
-	// Updater updates the state of the component by one tick.
-	HandleUpdate()
+	HandleUpdate(v *View)
 }
 
 // ButtonHandler represents a button component.
@@ -48,13 +30,6 @@ type ButtonHandler interface {
 	// The parameter (x, y) is the location relative to the window (0,0).
 	// The parameter isCancel is true when the touch/left click is released outside of the button.
 	HandleRelease(x, y int, isCancel bool)
-}
-
-// NotButton represents a component that is not a button.
-// TODO: update HandlePress to return bool in the next major version.
-type NotButton interface {
-	// IsButton returns true if the handler is a button.
-	IsButton() bool
 }
 
 // TouchHandler represents a component that handle touches.
@@ -108,43 +83,130 @@ type SwipeHandler interface {
 	HandleSwipe(dir SwipeDirection)
 }
 
-type handler struct {
-	opts HandlerOpts
+// Handler represents a component that can be added to a container.
+// Do not directly use func in this struct, using Handle* instead.
+type Handler struct {
+	// you can put any extra data here
+	Extra                       interface{}
+	Draw                        func(screen *ebiten.Image, frame image.Rectangle, v *View)
+	Update                      func(v *View)
+	Press                       func(x, y int, t ebiten.TouchID)
+	Release                     func(x, y int, isCancel bool)
+	JustPressedTouchID          func(touch ebiten.TouchID, x, y int) bool
+	JustReleasedTouchID         func(touch ebiten.TouchID, x, y int)
+	Mouse                       func(x, y int) bool
+	JustPressedMouseButtonLeft  func(frame image.Rectangle, x, y int) bool
+	JustReleasedMouseButtonLeft func(frame image.Rectangle, x, y int)
+	MouseEnter                  func(x, y int) bool
+	MouseLeave                  func()
+	Swipe                       func(dir SwipeDirection)
 }
 
-// HandlerOpts represents the options for a handler.
-type HandlerOpts struct {
-	Update        func(v *View)
-	Draw          func(screen *ebiten.Image, frame image.Rectangle, v *View)
-	HandlePress   func(x, y int, t ebiten.TouchID)
-	HandleRelease func(x, y int, isCancel bool)
+// IsTouchHandler returns true if the handler is a touch handler. Otherwise, returns false.
+//
+// The resons why it requires two functions to handle touch is that some state should be kept between the touch start and end.
+// If one of them is nil, nothing can be done properly.
+func (h *Handler) IsTouchHandler() bool {
+	return h.JustPressedTouchID != nil || h.JustReleasedTouchID != nil
 }
 
-// NewHandler creates a new handler.
-func NewHandler(opts HandlerOpts) Handler {
-	return &handler{opts: opts}
+func (h *Handler) IsButtonHandler() bool {
+	return h.Press != nil && h.Release != nil
 }
 
-func (h *handler) Update(v *View) {
-	if h.opts.Update != nil {
-		h.opts.Update(v)
+// HandleSwipe implements SwipeHandler.
+func (h *Handler) HandleSwipe(dir SwipeDirection) {
+	if h.Swipe != nil {
+		h.Swipe(dir)
 	}
 }
 
-func (h *handler) Draw(screen *ebiten.Image, frame image.Rectangle, v *View) {
-	if h.opts.Draw != nil {
-		h.opts.Draw(screen, frame, v)
+// HandleMouseEnter implements MouseEnterLeaveHandler.
+func (h *Handler) HandleMouseEnter(x int, y int) bool {
+	if h.MouseEnter != nil {
+		return h.MouseEnter(x, y)
+	}
+	return false
+}
+
+// HandleMouseLeave implements MouseEnterLeaveHandler.
+func (h *Handler) HandleMouseLeave() {
+	if h.MouseLeave != nil {
+		h.MouseLeave()
 	}
 }
 
-func (h *handler) HandlePress(x, y int, t ebiten.TouchID) {
-	if h.opts.HandlePress != nil {
-		h.opts.HandlePress(x, y, t)
+// HandleJustPressedMouseButtonLeft implements MouseLeftButtonHandler.
+func (h *Handler) HandleJustPressedMouseButtonLeft(frame image.Rectangle, x int, y int) bool {
+	if h.JustPressedMouseButtonLeft != nil {
+		return h.JustPressedMouseButtonLeft(frame, x, y)
+	}
+	return false
+}
+
+// HandleJustReleasedMouseButtonLeft implements MouseLeftButtonHandler.
+func (h *Handler) HandleJustReleasedMouseButtonLeft(frame image.Rectangle, x int, y int) {
+	if h.JustReleasedMouseButtonLeft != nil {
+		h.JustReleasedMouseButtonLeft(frame, x, y)
 	}
 }
 
-func (h *handler) HandleRelease(x, y int, isCancel bool) {
-	if h.opts.HandleRelease != nil {
-		h.opts.HandleRelease(x, y, isCancel)
+// HandleMouse implements MouseHandler.
+func (h *Handler) HandleMouse(x int, y int) bool {
+	if h.Mouse != nil {
+		return h.Mouse(x, y)
+	}
+	return false
+}
+
+// HandleJustPressedTouchID implements TouchHandler.
+func (h *Handler) HandleJustPressedTouchID(touch ebiten.TouchID, x int, y int) bool {
+	if h.JustPressedTouchID != nil {
+		return h.JustPressedTouchID(touch, x, y)
+	}
+	return false
+}
+
+// HandleJustReleasedTouchID implements TouchHandler.
+func (h *Handler) HandleJustReleasedTouchID(touch ebiten.TouchID, x int, y int) {
+	if h.JustReleasedTouchID != nil {
+		h.JustReleasedTouchID(touch, x, y)
 	}
 }
+
+// HandleUpdate implements Updater.
+func (h *Handler) HandleUpdate(v *View) {
+	if h.Update != nil {
+		h.Update(v)
+	}
+}
+
+// HandleDraw implements Drawer.
+func (h *Handler) HandleDraw(screen *ebiten.Image, frame image.Rectangle, v *View) {
+	if h.Draw != nil {
+		h.Draw(screen, frame, v)
+	}
+}
+
+// HandlePress implements ButtonHandler.
+func (h *Handler) HandlePress(x, y int, t ebiten.TouchID) {
+	if h.Press != nil {
+		h.Press(x, y, t)
+	}
+}
+
+// HandleRelease implements ButtonHandler.
+func (h *Handler) HandleRelease(x, y int, isCancel bool) {
+	if h.Release != nil {
+		h.Release(x, y, isCancel)
+	}
+}
+
+var _ ButtonHandler = (*Handler)(nil)
+var _ Drawer = (*Handler)(nil)
+var _ Updater = (*Handler)(nil)
+var _ TouchHandler = (*Handler)(nil)
+var _ MouseHandler = (*Handler)(nil)
+var _ MouseLeftButtonHandler = (*Handler)(nil)
+var _ MouseEnterLeaveHandler = (*Handler)(nil)
+var _ SwipeHandler = (*Handler)(nil)

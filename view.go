@@ -9,11 +9,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-// View represents a UI element.
-// You can set flex options, size, position and so on.
-// Handlers can be set to create custom component such as button or list.
-type View struct {
-	// TODO: Remove these fields in the future.
+type ElementAttributes struct {
 	Left         int
 	Right        *int
 	Top          int
@@ -36,13 +32,19 @@ type View struct {
 	Shrink       float64
 	Display      Display
 
-	ID      string
-	Raw     string
-	TagName string
-	Text    string
-	Attrs   map[string]string
-	Hidden  bool
+	ID         string
+	Raw        string
+	TagName    string
+	Text       string
+	ExtraAttrs map[string]string
+	Hidden     bool
+}
 
+// View represents a UI element.
+// You can set flex options, size, position and so on.
+// Handlers can be set to create custom component such as button or list.
+type View struct {
+	Attrs   ElementAttributes
 	Handler Handler
 
 	containerEmbed
@@ -70,26 +72,19 @@ func (v *View) Update() {
 }
 
 func (v *View) processHandler() {
-	if u, ok := v.Handler.(UpdateHandler); ok {
-		u.HandleUpdate()
-		return
-	}
-	if u, ok := v.Handler.(Updater); ok {
-		u.Update(v)
-		return
-	}
+	v.Handler.HandleUpdate(v)
 }
 
 func (v *View) startLayout() {
 	v.lock.Lock()
 	defer v.lock.Unlock()
 	if !v.hasParent {
-		v.frame = image.Rect(v.Left, v.Top, v.Left+v.Width, v.Top+v.Height)
+		v.frame = image.Rect(v.Attrs.Left, v.Attrs.Top, v.Attrs.Left+v.Attrs.Width, v.Attrs.Top+v.Attrs.Height)
 	}
 	v.flexEmbed.View = v
 
 	for _, child := range v.children {
-		if child.item.Position == PositionStatic {
+		if child.item.Attrs.Position == PositionStatic {
 			child.item.startLayout()
 		}
 	}
@@ -100,9 +95,9 @@ func (v *View) startLayout() {
 
 // UpdateWithSize the view with modified height and width
 func (v *View) UpdateWithSize(width, height int) {
-	if !v.hasParent && (v.Width != width || v.Height != height) {
-		v.Height = height
-		v.Width = width
+	if !v.hasParent && (v.Attrs.Width != width || v.Attrs.Height != height) {
+		v.Attrs.Height = height
+		v.Attrs.Width = width
 		v.isDirty = true
 	}
 	v.Update()
@@ -125,10 +120,10 @@ func (v *View) Draw(screen *ebiten.Image) {
 		// scale frame with GlobalScale
 		v.handleDrawRoot(screen, scaleFrame(v.frame))
 	}
-	if !v.Hidden && v.Display != DisplayNone {
+	if !v.Attrs.Hidden && v.Attrs.Display != DisplayNone {
 		v.containerEmbed.Draw(screen)
 	}
-	if Debug && !v.hasParent && v.Display != DisplayNone {
+	if Debug && !v.hasParent && v.Attrs.Display != DisplayNone {
 		debugBorders(screen, v.containerEmbed)
 	}
 }
@@ -197,25 +192,25 @@ func (v *View) addChild(cv *View) *View {
 }
 
 func (v *View) isWidthFixed() bool {
-	return v.Width != 0 || v.WidthInPct != 0
+	return v.Attrs.Width != 0 || v.Attrs.WidthInPct != 0
 }
 
 func (v *View) width() int {
-	if v.Width == 0 {
+	if v.Attrs.Width == 0 {
 		return v.calculatedWidth
 	}
-	return v.Width
+	return v.Attrs.Width
 }
 
 func (v *View) isHeightFixed() bool {
-	return v.Height != 0 || v.HeightInPct != 0
+	return v.Attrs.Height != 0 || v.Attrs.HeightInPct != 0
 }
 
 func (v *View) height() int {
-	if v.Height == 0 {
+	if v.Attrs.Height == 0 {
 		return v.calculatedHeight
 	}
-	return v.Height
+	return v.Attrs.Height
 }
 
 func (v *View) GetChildren() []*View {
@@ -252,7 +247,7 @@ func (v *View) Last() *View {
 // GetByID returns the view with the specified id.
 // It returns nil if not found.
 func (v *View) GetByID(id string) (*View, bool) {
-	if v.ID == id {
+	if v.Attrs.ID == id {
 		return v, true
 	}
 	for _, child := range v.children {
@@ -276,7 +271,7 @@ func (v *View) MustGetByID(id string) *View {
 // FilterByTagName returns views with the specified tag name.
 func (v *View) FilterByTagName(tagName string) []*View {
 	var views []*View
-	if v.TagName == tagName {
+	if v.Attrs.TagName == tagName {
 		views = append(views, v)
 	}
 	for _, child := range v.children {
@@ -287,146 +282,146 @@ func (v *View) FilterByTagName(tagName string) []*View {
 
 // SetLeft sets the left position of the view.
 func (v *View) SetLeft(left int) {
-	v.Left = left
+	v.Attrs.Left = left
 	v.Layout()
 }
 
 // SetRight sets the right position of the view.
 func (v *View) SetRight(right int) {
-	v.Right = Int(right)
+	v.Attrs.Right = Int(right)
 	v.Layout()
 }
 
 // SetTop sets the top position of the view.
 func (v *View) SetTop(top int) {
-	v.Top = top
+	v.Attrs.Top = top
 	v.Layout()
 }
 
 // SetBottom sets the bottom position of the view.
 func (v *View) SetBottom(bottom int) {
-	v.Bottom = Int(bottom)
+	v.Attrs.Bottom = Int(bottom)
 	v.Layout()
 }
 
 // SetWidth sets the width of the view.
 func (v *View) SetWidth(width int) {
-	v.Width = width
+	v.Attrs.Width = width
 	v.Layout()
 }
 
 // SetHeight sets the height of the view.
 func (v *View) SetHeight(height int) {
-	v.Height = height
+	v.Attrs.Height = height
 	v.Layout()
 }
 
 // SetMarginLeft sets the left margin of the view.
 func (v *View) SetMarginLeft(marginLeft int) {
-	v.MarginLeft = marginLeft
+	v.Attrs.MarginLeft = marginLeft
 	v.Layout()
 }
 
 // SetMarginTop sets the top margin of the view.
 func (v *View) SetMarginTop(marginTop int) {
-	v.MarginTop = marginTop
+	v.Attrs.MarginTop = marginTop
 	v.Layout()
 }
 
 // SetMarginRight sets the right margin of the view.
 func (v *View) SetMarginRight(marginRight int) {
-	v.MarginRight = marginRight
+	v.Attrs.MarginRight = marginRight
 	v.Layout()
 }
 
 // SetMarginBottom sets the bottom margin of the view.
 func (v *View) SetMarginBottom(marginBottom int) {
-	v.MarginBottom = marginBottom
+	v.Attrs.MarginBottom = marginBottom
 	v.Layout()
 }
 
 // SetPosition sets the position of the view.
 func (v *View) SetPosition(position Position) {
-	v.Position = position
+	v.Attrs.Position = position
 	v.Layout()
 }
 
 // SetDirection sets the direction of the view.
 func (v *View) SetDirection(direction Direction) {
-	v.Direction = direction
+	v.Attrs.Direction = direction
 	v.Layout()
 }
 
 // SetWrap sets the wrap property of the view.
 func (v *View) SetWrap(wrap FlexWrap) {
-	v.Wrap = wrap
+	v.Attrs.Wrap = wrap
 	v.Layout()
 }
 
 // SetJustify sets the justify property of the view.
 func (v *View) SetJustify(justify Justify) {
-	v.Justify = justify
+	v.Attrs.Justify = justify
 	v.Layout()
 }
 
 // SetAlignItems sets the align items property of the view.
 func (v *View) SetAlignItems(alignItems AlignItem) {
-	v.AlignItems = alignItems
+	v.Attrs.AlignItems = alignItems
 	v.Layout()
 }
 
 // SetAlignContent sets the align content property of the view.
 func (v *View) SetAlignContent(alignContent AlignContent) {
-	v.AlignContent = alignContent
+	v.Attrs.AlignContent = alignContent
 	v.Layout()
 }
 
 // SetGrow sets the grow property of the view.
 func (v *View) SetGrow(grow float64) {
-	v.Grow = grow
+	v.Attrs.Grow = grow
 	v.Layout()
 }
 
 // SetShrink sets the shrink property of the view.
 func (v *View) SetShrink(shrink float64) {
-	v.Shrink = shrink
+	v.Attrs.Shrink = shrink
 	v.Layout()
 }
 
 // SetDisplay sets the display property of the view.
 func (v *View) SetDisplay(display Display) {
-	v.Display = display
+	v.Attrs.Display = display
 	v.Layout()
 }
 
 // SetHidden sets the hidden property of the view.
 func (v *View) SetHidden(hidden bool) {
-	v.Hidden = hidden
+	v.Attrs.Hidden = hidden
 	v.Layout()
 }
 
 func (v *View) Config() ViewConfig {
 	cfg := ViewConfig{
-		TagName:      v.TagName,
-		ID:           v.ID,
-		Left:         v.Left,
-		Right:        v.Right,
-		Top:          v.Top,
-		Bottom:       v.Bottom,
-		Width:        v.Width,
-		Height:       v.Height,
-		MarginLeft:   v.MarginLeft,
-		MarginTop:    v.MarginTop,
-		MarginRight:  v.MarginRight,
-		MarginBottom: v.MarginBottom,
-		Position:     v.Position,
-		Direction:    v.Direction,
-		Wrap:         v.Wrap,
-		Justify:      v.Justify,
-		AlignItems:   v.AlignItems,
-		AlignContent: v.AlignContent,
-		Grow:         v.Grow,
-		Shrink:       v.Shrink,
+		TagName:      v.Attrs.TagName,
+		ID:           v.Attrs.ID,
+		Left:         v.Attrs.Left,
+		Right:        v.Attrs.Right,
+		Top:          v.Attrs.Top,
+		Bottom:       v.Attrs.Bottom,
+		Width:        v.Attrs.Width,
+		Height:       v.Attrs.Height,
+		MarginLeft:   v.Attrs.MarginLeft,
+		MarginTop:    v.Attrs.MarginTop,
+		MarginRight:  v.Attrs.MarginRight,
+		MarginBottom: v.Attrs.MarginBottom,
+		Position:     v.Attrs.Position,
+		Direction:    v.Attrs.Direction,
+		Wrap:         v.Attrs.Wrap,
+		Justify:      v.Attrs.Justify,
+		AlignItems:   v.Attrs.AlignItems,
+		AlignContent: v.Attrs.AlignContent,
+		Grow:         v.Attrs.Grow,
+		Shrink:       v.Attrs.Shrink,
 		children:     []ViewConfig{},
 	}
 	for _, child := range v.GetChildren() {
@@ -436,13 +431,7 @@ func (v *View) Config() ViewConfig {
 }
 
 func (v *View) handleDrawRoot(screen *ebiten.Image, b image.Rectangle) {
-	if h, ok := v.Handler.(DrawHandler); ok {
-		h.HandleDraw(screen, b)
-		return
-	}
-	if h, ok := v.Handler.(Drawer); ok {
-		h.Draw(screen, b, v)
-	}
+	v.Handler.HandleDraw(screen, b, v)
 }
 
 // This is for debugging and testing.

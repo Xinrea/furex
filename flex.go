@@ -209,43 +209,43 @@ func (f *flexEmbed) layout(width, height int, container *containerEmbed) {
 	// Determine the flex base size and hypothetical main size of each item:
 	var children []element
 	for _, c := range container.children {
-		if c.item.Display == DisplayNone {
+		if c.item.Attrs.Display == DisplayNone {
 			continue
 		}
-		if c.item.Position == PositionAbsolute {
+		if c.item.Attrs.Position == PositionAbsolute {
 			x := container.frame.Min.X
-			if c.item.Left != 0 {
-				x = container.frame.Min.X + c.item.Left
-			} else if c.item.Right != nil {
-				x = container.frame.Max.X - *c.item.Right - c.item.Width
+			if c.item.Attrs.Left != 0 {
+				x = container.frame.Min.X + c.item.Attrs.Left
+			} else if c.item.Attrs.Right != nil {
+				x = container.frame.Max.X - *c.item.Attrs.Right - c.item.Attrs.Width
 			}
 			y := container.frame.Min.Y
-			if c.item.Top != 0 {
-				y = container.frame.Min.Y + c.item.Top
-			} else if c.item.Bottom != nil {
-				y = container.frame.Max.Y - *c.item.Bottom - c.item.Height
+			if c.item.Attrs.Top != 0 {
+				y = container.frame.Min.Y + c.item.Attrs.Top
+			} else if c.item.Attrs.Bottom != nil {
+				y = container.frame.Max.Y - *c.item.Attrs.Bottom - c.item.Attrs.Height
 			}
-			c.bounds = image.Rect(x, y, x+c.item.Width, y+c.item.Height)
+			c.bounds = image.Rect(x, y, x+c.item.Attrs.Width, y+c.item.Attrs.Height)
 			c.item.frame = c.bounds
 			c.absolute = true
 			continue
 		}
 		c.absolute = false
 		children = append(children, element{
-			widthInPct:   c.item.WidthInPct,
-			heightInPct:  c.item.HeightInPct,
+			widthInPct:   c.item.Attrs.WidthInPct,
+			heightInPct:  c.item.Attrs.HeightInPct,
 			flexBaseSize: float64(f.flexBaseSize(c)),
 			node:         c,
 		})
 	}
 
 	// Depending on the flex container direction, apply calculation for width and height in percent.
-	switch f.Direction {
+	switch f.Attrs.Direction {
 	case Row:
 		// Calculate the remaining width after taking out the fixed width items.
 		remFree := width
 		for _, c := range children {
-			remFree -= (c.node.item.Width + c.node.item.MarginLeft + c.node.item.MarginRight)
+			remFree -= (c.node.item.Attrs.Width + c.node.item.Attrs.MarginLeft + c.node.item.Attrs.MarginRight)
 		}
 		// If there is remaining space, distribute it among the flexible items.
 		if remFree > 0 {
@@ -261,14 +261,14 @@ func (f *flexEmbed) layout(width, height int, container *containerEmbed) {
 		for _, c := range children {
 			if c.heightInPct > 0 {
 				// Calculate the new width based on the item's width percentage.
-				c.node.item.calculatedHeight = int(float64(height) * c.node.item.HeightInPct / 100)
+				c.node.item.calculatedHeight = int(float64(height) * c.node.item.Attrs.HeightInPct / 100)
 			}
 		}
 	case Column:
 		// Calculate the remaining height after taking out the fixed width items.
 		remFree := height
 		for _, c := range children {
-			remFree -= (c.node.item.Height + c.node.item.MarginTop + c.node.item.MarginBottom)
+			remFree -= (c.node.item.Attrs.Height + c.node.item.Attrs.MarginTop + c.node.item.Attrs.MarginBottom)
 		}
 		// If there is remaining space, distribute it among the flexible items.
 		if remFree > 0 {
@@ -284,17 +284,17 @@ func (f *flexEmbed) layout(width, height int, container *containerEmbed) {
 		for _, c := range children {
 			if c.widthInPct > 0 {
 				// Calculate the new width based on the item's width percentage.
-				c.node.item.calculatedWidth = int(float64(width) * c.node.item.WidthInPct / 100)
+				c.node.item.calculatedWidth = int(float64(width) * c.node.item.Attrs.WidthInPct / 100)
 			}
 		}
 	default:
-		panic(fmt.Sprint("flex: bad direction ", f.Direction))
+		panic(fmt.Sprint("flex: bad direction ", f.Attrs.Direction))
 	}
 
 	// §9.3. Main Size Determination
 	// Collect flex items into flex lines
 	var lines []flexLine
-	if f.Wrap == NoWrap {
+	if f.Attrs.Wrap == NoWrap {
 		// Single line
 		line := flexLine{child: make([]*element, len(children))}
 		for i := range children {
@@ -339,12 +339,12 @@ func (f *flexEmbed) layout(width, height int, container *containerEmbed) {
 		for _, child := range line.child {
 			mainSize := float64(f.mainSize(child.node.item.width(), child.node.item.height()))
 			if grow {
-				if child.node.item.Grow == 0 {
+				if child.node.item.Attrs.Grow == 0 {
 					child.frozen = true
 					child.mainSize = mainSize
 				}
 			} else {
-				if child.node.item.Shrink == 0 {
+				if child.node.item.Attrs.Shrink == 0 {
 					child.frozen = true
 					child.mainSize = mainSize
 				}
@@ -382,9 +382,9 @@ func (f *flexEmbed) layout(width, height int, container *containerEmbed) {
 				} else {
 					remFreeSpace -= (float64(f.mainSize(child.node.item.width(), child.node.item.height())) + mainMargin)
 					if grow {
-						unfrozenFlexFactor += child.node.item.Grow
+						unfrozenFlexFactor += child.node.item.Attrs.Grow
 					} else {
-						unfrozenFlexFactor += child.node.item.Shrink
+						unfrozenFlexFactor += child.node.item.Attrs.Shrink
 					}
 				}
 			}
@@ -402,7 +402,7 @@ func (f *flexEmbed) layout(width, height int, container *containerEmbed) {
 					if child.frozen {
 						continue
 					}
-					r := child.node.item.Grow / unfrozenFlexFactor
+					r := child.node.item.Attrs.Grow / unfrozenFlexFactor
 					child.mainSize = float64(f.mainSize(
 						child.node.item.width(), child.node.item.height(),
 					)) + r*remFreeSpace
@@ -415,7 +415,7 @@ func (f *flexEmbed) layout(width, height int, container *containerEmbed) {
 					}
 					scaledShrinkFactor := float64(f.mainSize(
 						child.node.item.width(), child.node.item.height(),
-					)) * child.node.item.Shrink
+					)) * child.node.item.Attrs.Shrink
 					sumScaledShrinkFactor += scaledShrinkFactor
 				}
 				for _, child := range line.child {
@@ -424,7 +424,7 @@ func (f *flexEmbed) layout(width, height int, container *containerEmbed) {
 					}
 					scaledShrinkFactor := float64(f.mainSize(
 						child.node.item.width(), child.node.item.height(),
-					)) * child.node.item.Shrink
+					)) * child.node.item.Attrs.Shrink
 					r := float64(scaledShrinkFactor) / sumScaledShrinkFactor
 					child.mainSize = float64(f.mainSize(
 						child.node.item.width(), child.node.item.height(),
@@ -478,7 +478,7 @@ func (f *flexEmbed) layout(width, height int, container *containerEmbed) {
 
 	// §9.4.9 align-content: stretch
 	remCrossSize := containerCrossSize - off
-	if f.AlignContent == AlignContentStretch && remCrossSize > 0 {
+	if f.Attrs.AlignContent == AlignContentStretch && remCrossSize > 0 {
 		add := remCrossSize / float64(len(lines))
 		for l := range lines {
 			line := &lines[l]
@@ -491,7 +491,7 @@ func (f *flexEmbed) layout(width, height int, container *containerEmbed) {
 	for l := range lines {
 		line := &lines[l]
 		for _, child := range line.child {
-			if f.AlignItems == AlignItemStretch &&
+			if f.Attrs.AlignItems == AlignItemStretch &&
 				!f.isCrossSizeFixed(child.node.item) &&
 				child.crossSize < line.crossSize {
 				crossMargin := child.crossMargin[0] + child.crossMargin[1]
@@ -510,7 +510,7 @@ func (f *flexEmbed) layout(width, height int, container *containerEmbed) {
 		}
 		remFree := containerMainSize - total
 		off, spacing := 0.0, 0.0
-		switch f.Justify {
+		switch f.Attrs.Justify {
 		case JustifyStart:
 		case JustifyEnd:
 			off = remFree
@@ -539,7 +539,7 @@ func (f *flexEmbed) layout(width, height int, container *containerEmbed) {
 			}
 			diff := line.crossSize - child.crossSize -
 				(child.crossMargin[0] + child.crossMargin[1])
-			switch f.AlignItems {
+			switch f.Attrs.AlignItems {
 			case AlignItemStart:
 				// already laid out correctly
 			case AlignItemEnd:
@@ -559,7 +559,7 @@ func (f *flexEmbed) layout(width, height int, container *containerEmbed) {
 	// §9.6.16 align flex lines, 'align-content'.
 	if remFree > 0 {
 		spacing, off := 0.0, 0.0
-		switch f.AlignContent {
+		switch f.Attrs.AlignContent {
 		case AlignContentStart:
 			// already laid out correctly
 		case AlignContentEnd:
@@ -572,7 +572,7 @@ func (f *flexEmbed) layout(width, height int, container *containerEmbed) {
 			spacing = remFree / float64(len(lines))
 			off = spacing / 2
 		}
-		if f.AlignContent != AlignContentStart {
+		if f.Attrs.AlignContent != AlignContentStart {
 			for l := range lines {
 				line := &lines[l]
 				line.crossOffset += off
@@ -596,11 +596,11 @@ func (f *flexEmbed) layout(width, height int, container *containerEmbed) {
 			var maxContentFlexFraction float64
 			if maxContentSize > flexBaseSize {
 				// Positive free space, divide by flex grow factor (floored at 1).
-				flexGrowFactor := math.Max(1, child.node.item.Grow)
+				flexGrowFactor := math.Max(1, child.node.item.Attrs.Grow)
 				maxContentFlexFraction = (maxContentSize - flexBaseSize) / flexGrowFactor
 			} else {
 				// Negative free space, divide by scaled flex shrink factor (floored at 1).
-				flexShrinkFactor := math.Max(1, child.node.item.Shrink)
+				flexShrinkFactor := math.Max(1, child.node.item.Attrs.Shrink)
 				maxContentFlexFraction = (flexBaseSize - maxContentSize) / (flexBaseSize * flexShrinkFactor)
 			}
 			child.maxContentFlexFraction = maxContentFlexFraction
@@ -613,9 +613,9 @@ func (f *flexEmbed) layout(width, height int, container *containerEmbed) {
 		for _, child := range line.child {
 			var newMainSize float64
 			if largestMaxContentFlexFraction > 0 {
-				newMainSize = child.flexBaseSize + (child.node.item.Grow * largestMaxContentFlexFraction)
+				newMainSize = child.flexBaseSize + (child.node.item.Attrs.Grow * largestMaxContentFlexFraction)
 			} else {
-				newMainSize = child.flexBaseSize - (child.node.item.Shrink * child.flexBaseSize * largestMaxContentFlexFraction)
+				newMainSize = child.flexBaseSize - (child.node.item.Attrs.Shrink * child.flexBaseSize * largestMaxContentFlexFraction)
 			}
 			child.mainSize = newMainSize
 		}
@@ -670,7 +670,7 @@ func (f *flexEmbed) layout(width, height int, container *containerEmbed) {
 	for l := range lines {
 		line := &lines[l]
 		for _, child := range line.child {
-			switch f.Direction {
+			switch f.Attrs.Direction {
 			case Row:
 				child.node.bounds = image.Rect(
 					round(child.mainOffset),
@@ -686,7 +686,7 @@ func (f *flexEmbed) layout(width, height int, container *containerEmbed) {
 					round(child.mainOffset+child.mainSize))
 				child.node.item.setFrame(child.node.bounds.Add(f.frame.Min))
 			default:
-				panic(fmt.Sprint("flex: bad direction ", f.Direction))
+				panic(fmt.Sprint("flex: bad direction ", f.Attrs.Direction))
 			}
 		}
 	}
@@ -715,96 +715,96 @@ type flexLine struct {
 }
 
 func (f *flexEmbed) mainSize(x, y int) int {
-	switch f.Direction {
+	switch f.Attrs.Direction {
 	case Row:
 		return x
 	case Column:
 		return y
 	default:
-		panic(fmt.Sprint("flex: bad direction ", f.Direction))
+		panic(fmt.Sprint("flex: bad direction ", f.Attrs.Direction))
 	}
 }
 
 func (f *flexEmbed) setCrossSize(v int) {
-	switch f.Direction {
+	switch f.Attrs.Direction {
 	case Row:
 		f.calculatedHeight = v
 	case Column:
 		f.calculatedWidth = v
 	default:
-		panic(fmt.Sprint("flex: bad direction ", f.Direction))
+		panic(fmt.Sprint("flex: bad direction ", f.Attrs.Direction))
 	}
 }
 
 func (f *flexEmbed) setMainSize(v int) {
-	switch f.Direction {
+	switch f.Attrs.Direction {
 	case Row:
 		f.calculatedWidth = v
 	case Column:
 		f.calculatedHeight = v
 	default:
-		panic(fmt.Sprint("flex: bad direction ", f.Direction))
+		panic(fmt.Sprint("flex: bad direction ", f.Attrs.Direction))
 	}
 }
 
 func (f *flexEmbed) isCrossSizeFixed(v *View) bool {
-	switch f.Direction {
+	switch f.Attrs.Direction {
 	case Row:
 		return v.isHeightFixed()
 	case Column:
 		return v.isWidthFixed()
 	default:
-		panic(fmt.Sprint("flex: bad direction ", f.Direction))
+		panic(fmt.Sprint("flex: bad direction ", f.Attrs.Direction))
 	}
 }
 
 func (f *flexEmbed) crossSize(x, y int) int {
-	switch f.Direction {
+	switch f.Attrs.Direction {
 	case Row:
 		return y
 	case Column:
 		return x
 	default:
-		panic(fmt.Sprint("flex: bad direction ", f.Direction))
+		panic(fmt.Sprint("flex: bad direction ", f.Attrs.Direction))
 	}
 }
 
 func (f *flexEmbed) mainMargin(c *child) []float64 {
-	switch f.Direction {
+	switch f.Attrs.Direction {
 	case Row:
 		return []float64{
-			float64(c.item.MarginLeft),
-			float64(c.item.MarginRight)}
+			float64(c.item.Attrs.MarginLeft),
+			float64(c.item.Attrs.MarginRight)}
 	case Column:
 		return []float64{
-			float64(c.item.MarginTop),
-			float64(c.item.MarginBottom)}
+			float64(c.item.Attrs.MarginTop),
+			float64(c.item.Attrs.MarginBottom)}
 	default:
 		panic("unreachable")
 	}
 }
 
 func (f *flexEmbed) crossMargin(c *child) []float64 {
-	switch f.Direction {
+	switch f.Attrs.Direction {
 	case Row:
 		return []float64{
-			float64(c.item.MarginTop),
-			float64(c.item.MarginBottom)}
+			float64(c.item.Attrs.MarginTop),
+			float64(c.item.Attrs.MarginBottom)}
 	case Column:
 		return []float64{
-			float64(c.item.MarginLeft),
-			float64(c.item.MarginRight)}
+			float64(c.item.Attrs.MarginLeft),
+			float64(c.item.Attrs.MarginRight)}
 	default:
 		panic("unreachable")
 	}
 }
 
 func (f *flexEmbed) flexBaseSize(c *child) int {
-	w := c.item.Width
+	w := c.item.Attrs.Width
 	if w == 0 {
 		w = c.item.calculatedWidth
 	}
-	h := c.item.Height
+	h := c.item.Attrs.Height
 	if h == 0 {
 		h = c.item.calculatedHeight
 	}

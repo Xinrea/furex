@@ -41,25 +41,29 @@ func TestParseHTML(t *testing.T) {
 					</view>
 				</body>`,
 			expected: (&View{
-				Left:         50,
-				Top:          100,
-				Width:        200,
-				Height:       300,
-				MarginLeft:   120,
-				MarginTop:    130,
-				MarginRight:  140,
-				MarginBottom: 150,
-				Position:     PositionAbsolute,
-				Direction:    Row,
-				Wrap:         Wrap,
-				Justify:      JustifyEnd,
-				AlignItems:   AlignItemEnd,
-				AlignContent: AlignContentCenter,
-				Grow:         2,
-				Shrink:       3,
+				Attrs: ElementAttributes{
+					Left:         50,
+					Top:          100,
+					Width:        200,
+					Height:       300,
+					MarginLeft:   120,
+					MarginTop:    130,
+					MarginRight:  140,
+					MarginBottom: 150,
+					Position:     PositionAbsolute,
+					Direction:    Row,
+					Wrap:         Wrap,
+					Justify:      JustifyEnd,
+					AlignItems:   AlignItemEnd,
+					AlignContent: AlignContentCenter,
+					Grow:         2,
+					Shrink:       3,
+				},
 			}).AddChild(&View{
-				Width:  100,
-				Height: 200,
+				Attrs: ElementAttributes{
+					Width:  100,
+					Height: 200,
+				},
 			}),
 		},
 		{
@@ -97,8 +101,10 @@ func TestParseHTML(t *testing.T) {
 				</view>
 						`,
 			expected: (&View{
-				Width:  200,
-				Height: 300,
+				Attrs: ElementAttributes{
+					Width:  200,
+					Height: 300,
+				},
 			}).
 				AddChild(
 					(&View{}).AddChild(
@@ -121,14 +127,14 @@ func TestParseHTML(t *testing.T) {
 			opts: &ParseOptions{
 				Components: map[string]Component{
 					"mock-handler": func() Handler {
-						return &mockHandler{}
+						return NewMockHandler().Handler
 					},
 				},
 			},
 			expected: (&View{}).AddChild((&View{})),
 			after: func(t *testing.T, v *View) {
 				v.Update()
-				h := v.Handler.(*mockHandler)
+				h := v.Handler.Extra.(*mockHandler)
 				require.True(t, h.IsUpdated)
 			},
 		},
@@ -141,20 +147,22 @@ func TestParseHTML(t *testing.T) {
 			opts: &ParseOptions{
 				Components: map[string]Component{
 					"mock-handler": func() Handler {
-						return &mockHandler{}
+						return NewMockHandler().Handler
 					},
 				},
 				Width:  100,
 				Height: 200,
 			},
 			expected: (&View{
-				Width:  100,
-				Height: 200,
+				Attrs: ElementAttributes{
+					Width:  100,
+					Height: 200,
+				},
 			}),
 			after: func(t *testing.T, v *View) {
 				v.Update()
 				v.Draw(nil)
-				h := v.Handler.(*mockHandler)
+				h := v.Handler.Extra.(*mockHandler)
 				require.True(t, h.IsUpdated)
 				require.True(t, h.IsDrawn)
 				require.Equal(t, 0, h.Frame.Min.X)
@@ -172,8 +180,10 @@ func TestParseHTML(t *testing.T) {
 				</view>
 						`,
 			expected: (&View{
-				Width:  200,
-				Height: 300,
+				Attrs: ElementAttributes{
+					Width:  200,
+					Height: 300,
+				},
 			}).AddChild((&View{})),
 			opts: &ParseOptions{
 				Width:  200,
@@ -182,7 +192,7 @@ func TestParseHTML(t *testing.T) {
 			after: func(t *testing.T, v *View) {
 				elem, ok := v.GetByID("test")
 				require.True(t, ok)
-				require.Equal(t, true, elem.Hidden)
+				require.Equal(t, true, elem.Attrs.Hidden)
 			},
 		},
 		{
@@ -372,102 +382,132 @@ func TestParseHTML(t *testing.T) {
 				Height: 800,
 			},
 			expected: (&View{
-				Width:        640,
-				Height:       800,
-				Direction:    Column,
-				Justify:      JustifySpaceBetween,
-				AlignItems:   AlignItemStretch,
-				AlignContent: AlignContentStretch,
+				Attrs: ElementAttributes{
+					Width:        640,
+					Height:       800,
+					Direction:    Column,
+					Justify:      JustifySpaceBetween,
+					AlignItems:   AlignItemStretch,
+					AlignContent: AlignContentStretch,
+				},
 			}).AddChild(
 				(&View{
-					MarginTop:  50,
-					Grow:       1,
-					AlignItems: AlignItemCenter,
-					Justify:    JustifyCenter,
-				}).AddChild(
-					(&View{
-						Width:      300,
-						Height:     300,
-						MarginTop:  120,
-						MarginLeft: 130,
-						Direction:  Column,
+					Attrs: ElementAttributes{
+						MarginTop:  50,
+						Grow:       1,
 						AlignItems: AlignItemCenter,
 						Justify:    JustifyCenter,
-					}).AddChild(
-						(&View{
-							MarginTop:  20,
-							Width:      245,
-							Height:     200,
+					},
+				}).AddChild(
+					(&View{
+						Attrs: ElementAttributes{
+							Width:      300,
+							Height:     300,
+							MarginTop:  120,
+							MarginLeft: 130,
 							Direction:  Column,
 							AlignItems: AlignItemCenter,
 							Justify:    JustifyCenter,
+						},
+					}).AddChild(
+						(&View{
+							Attrs: ElementAttributes{
+								MarginTop:  20,
+								Width:      245,
+								Height:     200,
+								Direction:  Column,
+								AlignItems: AlignItemCenter,
+								Justify:    JustifyCenter,
+							},
 						}).AddChild(
 							(&View{
-								Width:      180,
-								Height:     38,
-								AlignItems: AlignItemStart,
-								Justify:    JustifyStart,
-								Direction:  Column,
+								Attrs: ElementAttributes{
+									Width:      180,
+									Height:     38,
+									AlignItems: AlignItemStart,
+									Justify:    JustifyStart,
+									Direction:  Column,
+								},
 							}).AddChild(
 								&View{
-									Height:       20,
-									Width:        180,
-									MarginBottom: 2,
+									Attrs: ElementAttributes{
+										Height:       20,
+										Width:        180,
+										MarginBottom: 2,
+									},
 								},
 								&View{
-									Width:  180,
-									Height: 18,
+									Attrs: ElementAttributes{
+										Width:  180,
+										Height: 18,
+									},
 								},
 							),
 
 							(&View{
-								Width:      180,
-								Height:     38,
-								AlignItems: AlignItemStart,
-								Justify:    JustifyStart,
-								Direction:  Column,
-								MarginTop:  30,
+								Attrs: ElementAttributes{
+									Width:      180,
+									Height:     38,
+									AlignItems: AlignItemStart,
+									Justify:    JustifyStart,
+									Direction:  Column,
+									MarginTop:  30,
+								},
 							}).AddChild(
 								&View{
-									Height:       20,
-									Width:        180,
-									MarginBottom: 2,
+									Attrs: ElementAttributes{
+										Height:       20,
+										Width:        180,
+										MarginBottom: 2,
+									},
 								},
 								&View{
-									Width:  180,
-									Height: 18,
+									Attrs: ElementAttributes{
+										Width:  180,
+										Height: 18,
+									},
 								},
 							),
 						),
 						(&View{
-							MarginTop:    20,
-							MarginBottom: 20,
-							Grow:         1,
-							Direction:    Row,
-							AlignItems:   AlignItemCenter,
-							Justify:      JustifyCenter,
+							Attrs: ElementAttributes{
+								MarginTop:    20,
+								MarginBottom: 20,
+								Grow:         1,
+								Direction:    Row,
+								AlignItems:   AlignItemCenter,
+								Justify:      JustifyCenter,
+							},
 						}).AddChild(
 							&View{
-								Width:  190,
-								Height: 49,
+								Attrs: ElementAttributes{
+									Width:  190,
+									Height: 49,
+								},
 							},
 							&View{
-								Width:      45,
-								Height:     49,
-								MarginLeft: 10,
+								Attrs: ElementAttributes{
+									Width:      45,
+									Height:     49,
+									MarginLeft: 10,
+								},
 							},
 						),
 						(&View{
-							Position: PositionAbsolute,
-							Left:     300 - 35/2,
-							Top:      4 - 38/2,
-							Width:    35,
-							Height:   38,
+							Attrs: ElementAttributes{
+								Position: PositionAbsolute,
+								Left:     300 - 35/2,
+								Top:      4 - 38/2,
+								Width:    35,
+								Height:   38,
+							},
 						}).AddChild(
 							&View{
-								Position: PositionAbsolute,
-								Left:     18,
-								Top:      17,
+								Attrs: ElementAttributes{
+									Position: PositionAbsolute,
+									Left:     18,
+									Top:      17,
+								},
 							},
 						),
 					),
@@ -515,20 +555,26 @@ func TestParseHTML(t *testing.T) {
 				Height: 800,
 			},
 			expected: (&View{
-				Width:     640,
-				Height:    800,
-				Direction: Column,
-				Justify:   JustifyCenter,
-				Grow:      1,
-			}).AddChild(
-				(&View{
+				Attrs: ElementAttributes{
+					Width:     640,
+					Height:    800,
 					Direction: Column,
 					Justify:   JustifyCenter,
 					Grow:      1,
+				},
+			}).AddChild(
+				(&View{
+					Attrs: ElementAttributes{
+						Direction: Column,
+						Justify:   JustifyCenter,
+						Grow:      1,
+					},
 				}).AddChild(
 					&View{
-						Width:  30,
-						Height: 800,
+						Attrs: ElementAttributes{
+							Width:  30,
+							Height: 800,
+						},
 					},
 				),
 			)},
@@ -536,7 +582,7 @@ func TestParseHTML(t *testing.T) {
 			name: "functional component",
 			before: func(t *testing.T) {
 				register("test-comp", func() *View {
-					return &View{Width: 100, Height: 100}
+					return &View{Attrs: ElementAttributes{Width: 100, Height: 100}}
 				})
 			},
 			html: `
@@ -547,8 +593,8 @@ func TestParseHTML(t *testing.T) {
 				Width:  200,
 				Height: 300,
 			},
-			expected: (&View{Width: 200, Height: 300}).AddChild((&View{
-				Position: PositionAbsolute, Width: 100, Height: 100,
+			expected: (&View{Attrs: ElementAttributes{Width: 200, Height: 300}}).AddChild((&View{
+				Attrs: ElementAttributes{Position: PositionAbsolute, Width: 100, Height: 100},
 			})),
 		},
 	}

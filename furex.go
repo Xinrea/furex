@@ -32,7 +32,7 @@ func debugBorders(screen *ebiten.Image, root containerEmbed) {
 			})
 
 			for _, c := range curr.children {
-				if c.item.Display == DisplayNone {
+				if c.item.Attrs.Display == DisplayNone {
 					continue
 				}
 				queue = append(queue, c.item.containerEmbed)

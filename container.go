@@ -50,22 +50,16 @@ func (ct *containerEmbed) computeBounds(child *child) image.Rectangle {
 }
 
 func (ct *containerEmbed) handleDraw(screen *ebiten.Image, b image.Rectangle, child *child) {
-	if h, ok := child.item.Handler.(DrawHandler); ok {
-		h.HandleDraw(screen, b)
-		return
-	}
-	if h, ok := child.item.Handler.(Drawer); ok {
-		h.Draw(screen, b, child.item)
-	}
+	child.item.Handler.Draw(screen, b, child.item)
 }
 
 func (ct *containerEmbed) shouldDrawChild(child *child) bool {
-	return !child.item.Hidden && child.item.Display != DisplayNone && child.item.Handler != nil
+	return !child.item.Attrs.Hidden && child.item.Attrs.Display != DisplayNone && child.item.Handler.Draw != nil
 }
 
 func (ct *containerEmbed) debugDraw(screen *ebiten.Image, b image.Rectangle, child *child) {
 	if Debug {
-		pos := fmt.Sprintf("(%d, %d)-(%d, %d):%s:%s", b.Min.X, b.Min.Y, b.Max.X, b.Max.Y, child.item.TagName, child.item.ID)
+		pos := fmt.Sprintf("(%d, %d)-(%d, %d):%s:%s", b.Min.X, b.Min.Y, b.Max.X, b.Max.Y, child.item.Attrs.TagName, child.item.Attrs.ID)
 		graphic.FillRect(screen, &graphic.FillRectOpts{
 			Color: color.RGBA{0, 0, 0, 200},
 			Rect:  image.Rect(b.Min.X, b.Min.Y, b.Min.X+len(pos)*6, b.Min.Y+12),
@@ -78,7 +72,7 @@ func (ct *containerEmbed) HandleJustPressedTouchID(touchID ebiten.TouchID, x, y 
 	for c := len(ct.children) - 1; c >= 0; c-- {
 		child := ct.children[c]
 		childFrame := ct.childFrame(child)
-		if child.item.Display == DisplayNone {
+		if child.item.Attrs.Display == DisplayNone {
 			continue
 		}
 		if child.HandleJustPressedTouchID(childFrame, touchID, x, y) {
@@ -104,15 +98,12 @@ func (ct *containerEmbed) handleMouse(x, y int) bool {
 	for c := len(ct.children) - 1; c >= 0; c-- {
 		child := ct.children[c]
 		childFrame := ct.childFrame(child)
-		if child.item.Display == DisplayNone {
+		if child.item.Attrs.Display == DisplayNone {
 			continue
 		}
-		mouseHandler, ok := child.item.Handler.(MouseHandler)
-		if ok && mouseHandler != nil {
-			if isInside(childFrame, x, y) {
-				if mouseHandler.HandleMouse(x, y) {
-					return true
-				}
+		if isInside(childFrame, x, y) {
+			if child.item.Handler.HandleMouse(x, y) {
+				return true
 			}
 		}
 		if child.item.handleMouse(x, y) {
@@ -127,22 +118,19 @@ func (ct *containerEmbed) handleMouseEnterLeave(x, y int) bool {
 	for c := len(ct.children) - 1; c >= 0; c-- {
 		child := ct.children[c]
 		childFrame := ct.childFrame(child)
-		if child.item.Display == DisplayNone {
+		if child.item.Attrs.Display == DisplayNone {
 			continue
 		}
-		mouseHandler, ok := child.item.Handler.(MouseEnterLeaveHandler)
-		if ok {
-			if !result && !child.isMouseEntered && isInside(childFrame, x, y) {
-				if mouseHandler.HandleMouseEnter(x, y) {
-					result = true
-					child.isMouseEntered = true
-				}
+		if !result && !child.isMouseEntered && isInside(childFrame, x, y) {
+			if child.item.Handler.HandleMouseEnter(x, y) {
+				result = true
+				child.isMouseEntered = true
 			}
+		}
 
-			if child.isMouseEntered && !isInside(childFrame, x, y) {
-				child.isMouseEntered = false
-				mouseHandler.HandleMouseLeave()
-			}
+		if child.isMouseEntered && !isInside(childFrame, x, y) {
+			child.isMouseEntered = false
+			child.item.Handler.HandleMouseLeave()
 		}
 
 		if child.item.handleMouseEnterLeave(x, y) {
@@ -158,36 +146,22 @@ func (ct *containerEmbed) handleMouseButtonLeftPressed(x, y int) bool {
 	for c := len(ct.children) - 1; c >= 0; c-- {
 		child := ct.children[c]
 		childFrame := ct.childFrame(child)
-		if child.item.Display == DisplayNone {
+		if child.item.Attrs.Display == DisplayNone {
 			continue
 		}
-		mouseLeftClickHandler, ok := child.item.Handler.(MouseLeftButtonHandler)
-		if ok {
-			if !result && isInside(childFrame, x, y) {
-				if mouseLeftClickHandler.HandleJustPressedMouseButtonLeft(*childFrame, x, y) {
-					result = true
-					child.isMouseLeftButtonHandler = true
-				}
+		if !result && isInside(childFrame, x, y) {
+			if child.item.Handler.HandleJustPressedMouseButtonLeft(*childFrame, x, y) {
+				result = true
+				child.isMouseLeftButtonHandler = true
 			}
 		}
 
-		button, ok := child.item.Handler.(ButtonHandler)
-		if ok {
-			for {
-				if button, ok := child.item.Handler.(NotButton); ok {
-					if !button.IsButton() {
-						break
-					}
-				}
-				if !result && isInside(childFrame, x, y) {
-					if !child.isButtonPressed {
-						child.isButtonPressed = true
-						child.isMouseLeftButtonHandler = true
-						result = true
-						button.HandlePress(x, y, -1)
-					}
-				}
-				break
+		if !result && isInside(childFrame, x, y) {
+			if !child.isButtonPressed {
+				child.isButtonPressed = true
+				child.isMouseLeftButtonHandler = true
+				result = true
+				child.item.Handler.HandlePress(x, y, -1)
 			}
 		}
 
@@ -201,24 +175,18 @@ func (ct *containerEmbed) handleMouseButtonLeftPressed(x, y int) bool {
 func (ct *containerEmbed) handleMouseButtonLeftReleased(x, y int) {
 	for c := len(ct.children) - 1; c >= 0; c-- {
 		child := ct.children[c]
-		mouseLeftClickHandler, ok := child.item.Handler.(MouseLeftButtonHandler)
-		if ok {
-			if child.isMouseLeftButtonHandler {
-				child.isMouseLeftButtonHandler = false
-				mouseLeftClickHandler.HandleJustReleasedMouseButtonLeft(*ct.childFrame(child), x, y)
-			}
+		if child.isMouseLeftButtonHandler {
+			child.isMouseLeftButtonHandler = false
+			child.item.Handler.HandleJustReleasedMouseButtonLeft(*ct.childFrame(child), x, y)
 		}
 
-		button, ok := child.item.Handler.(ButtonHandler)
-		if ok {
-			if child.isButtonPressed && child.isMouseLeftButtonHandler {
-				child.isButtonPressed = false
-				child.isMouseLeftButtonHandler = false
-				if x == 0 && y == 0 {
-					button.HandleRelease(x, y, true)
-				} else {
-					button.HandleRelease(x, y, !isInside(ct.childFrame(child), x, y))
-				}
+		if child.isButtonPressed && child.isMouseLeftButtonHandler {
+			child.isButtonPressed = false
+			child.isMouseLeftButtonHandler = false
+			if x == 0 && y == 0 {
+				child.item.Handler.HandleRelease(x, y, true)
+			} else {
+				child.item.Handler.HandleRelease(x, y, !isInside(ct.childFrame(child), x, y))
 			}
 		}
 

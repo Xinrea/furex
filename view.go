@@ -54,9 +54,10 @@ type ViewAttrs struct {
 type View struct {
 	Attrs   ViewAttrs
 	Handler ViewHandler
+	Status  EventStatus
 
 	containerEmbed
-	flexEmbed
+
 	lock      sync.Mutex
 	hasParent bool
 	parent    *View
@@ -71,8 +72,8 @@ func (v *View) Update() {
 		v.processHandler()
 	}
 	for _, v := range v.children {
-		v.item.Update()
-		v.item.processHandler()
+		v.Update()
+		v.processHandler()
 	}
 	if !v.hasParent {
 		v.processEvent()
@@ -87,17 +88,17 @@ func (v *View) startLayout() {
 	v.lock.Lock()
 	defer v.lock.Unlock()
 	if !v.hasParent {
+		v.bounds = image.Rect(0, 0, v.Attrs.Width, v.Attrs.Height)
 		v.frame = image.Rect(v.Attrs.Left, v.Attrs.Top, v.Attrs.Left+v.Attrs.Width, v.Attrs.Top+v.Attrs.Height)
 	}
-	v.flexEmbed.View = v
 
 	for _, child := range v.children {
-		if child.item.Attrs.Position == PositionStatic {
-			child.item.startLayout()
+		if child.Attrs.Position == PositionStatic {
+			child.startLayout()
 		}
 	}
 
-	v.layout(v.frame.Dx(), v.frame.Dy(), &v.containerEmbed)
+	v.layout(v.bounds.Dx(), v.bounds.Dy(), &v.containerEmbed)
 	v.isDirty = false
 }
 
@@ -129,7 +130,7 @@ func (v *View) Draw(screen *ebiten.Image) {
 		v.handleDrawRoot(screen, scaleFrame(v.frame))
 	}
 	if !v.Attrs.Hidden && v.Attrs.Display != DisplayNone {
-		v.containerEmbed.Draw(screen)
+		v.childrenDraw(screen)
 	}
 	if Debug && !v.hasParent && v.Attrs.Display != DisplayNone {
 		debugBorders(screen, v.containerEmbed)
@@ -156,7 +157,7 @@ func (v *View) AddChild(views ...*View) *View {
 // RemoveChild removes a specified view
 func (v *View) RemoveChild(cv *View) bool {
 	for i, child := range v.children {
-		if child.item == cv {
+		if child == cv {
 			v.children = append(v.children[:i], v.children[i+1:]...)
 			v.isDirty = true
 			cv.hasParent = false
@@ -171,10 +172,10 @@ func (v *View) RemoveChild(cv *View) bool {
 func (v *View) RemoveAll() {
 	v.isDirty = true
 	for _, child := range v.children {
-		child.item.hasParent = false
-		child.item.parent = nil
+		child.hasParent = false
+		child.parent = nil
 	}
-	v.children = []*child{}
+	v.children = []*View{}
 }
 
 // PopChild remove the last child view add to this view
@@ -185,14 +186,13 @@ func (v *View) PopChild() *View {
 	c := v.children[len(v.children)-1]
 	v.children = v.children[:len(v.children)-1]
 	v.isDirty = true
-	c.item.hasParent = false
-	c.item.parent = nil
-	return c.item
+	c.hasParent = false
+	c.parent = nil
+	return c
 }
 
 func (v *View) addChild(cv *View) *View {
-	child := &child{item: cv, handledTouchID: -1}
-	v.children = append(v.children, child)
+	v.children = append(v.children, cv)
 	v.isDirty = true
 	cv.hasParent = true
 	cv.parent = v
@@ -226,9 +226,7 @@ func (v *View) GetChildren() []*View {
 		return nil
 	}
 	ret := make([]*View, len(v.children))
-	for i, child := range v.children {
-		ret[i] = child.item
-	}
+	copy(ret, v.children)
 	return ret
 }
 
@@ -241,7 +239,7 @@ func (v *View) NthChild(n int) *View {
 	if n < 0 || n >= len(v.children) {
 		return nil
 	}
-	return v.children[n].item
+	return v.children[n]
 }
 
 func (v *View) First() *View {
@@ -259,7 +257,7 @@ func (v *View) GetByID(id string) (*View, bool) {
 		return v, true
 	}
 	for _, child := range v.children {
-		if v, ok := child.item.GetByID(id); ok {
+		if v, ok := child.GetByID(id); ok {
 			return v, true
 		}
 	}
@@ -283,7 +281,7 @@ func (v *View) FilterByTagName(tagName string) []*View {
 		views = append(views, v)
 	}
 	for _, child := range v.children {
-		views = append(views, child.item.FilterByTagName(tagName)...)
+		views = append(views, child.FilterByTagName(tagName)...)
 	}
 	return views
 }
@@ -352,6 +350,10 @@ func (v *View) SetMarginBottom(marginBottom int) {
 func (v *View) SetPosition(position FlexPosition) {
 	v.Attrs.Position = position
 	v.Layout()
+}
+
+func (v *View) IsAbsolute() bool {
+	return v.Attrs.Position == PositionAbsolute
 }
 
 // SetDirection sets the direction of the view.

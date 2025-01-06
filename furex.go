@@ -32,10 +32,10 @@ func debugBorders(screen *ebiten.Image, root containerEmbed) {
 			})
 
 			for _, c := range curr.children {
-				if c.item.Attrs.Display == DisplayNone {
+				if c.Attrs.Display == DisplayNone {
 					continue
 				}
-				queue = append(queue, c.item.containerEmbed)
+				queue = append(queue, c.containerEmbed)
 			}
 			levelSize--
 		}

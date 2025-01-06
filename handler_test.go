@@ -2,7 +2,6 @@ package furex
 
 import (
 	"image"
-	"log"
 	"testing"
 	"time"
 
@@ -14,9 +13,9 @@ import (
 func TestHandlers(t *testing.T) {
 	// test scenarios
 	scenarios := make(map[string]func(t *testing.T, flex *View, h *mockHandler, frame image.Rectangle))
-	// scenarios["button touch"] = testButtonTouch
-	// scenarios["mouse click"] = testMouchClick
-	// scenarios["mouse move"] = testMouseMove
+	scenarios["button touch"] = testButtonTouch
+	scenarios["mouse click"] = testMouseClick
+	scenarios["mouse move"] = testMouseMove
 	scenarios["swipe"] = testSwipe
 	for scenario, fn := range scenarios {
 		t.Run(scenario, func(t *testing.T) {
@@ -145,15 +144,15 @@ func testButtonTouch(t *testing.T, flex *View, h *mockHandler, frame image.Recta
 		t.Run(tt.Scenario, func(t *testing.T) {
 			h.Init()
 
-			flex.HandleJustPressedTouchID(0, tt.Start.X, tt.Start.Y)
-			flex.HandleJustReleasedTouchID(0, tt.End.X, tt.End.Y)
+			flex.HandleJustPressedTouchID(nil, 0, tt.Start.X, tt.Start.Y)
+			flex.HandleJustReleasedTouchID(nil, 0, tt.End.X, tt.End.Y)
 
 			assert.Equal(t, tt.Want, result{h.IsPressed, h.IsReleased, h.IsCancel})
 		})
 	}
 }
 
-func testMouchClick(t *testing.T, flex *View, h *mockHandler, frame image.Rectangle) {
+func testMouseClick(t *testing.T, flex *View, h *mockHandler, frame image.Rectangle) {
 
 	type result struct {
 		IsPressed  bool
@@ -203,10 +202,10 @@ func testMouchClick(t *testing.T, flex *View, h *mockHandler, frame image.Rectan
 		t.Run(tt.Scenario, func(t *testing.T) {
 			h.Init()
 
-			flex.handleMouseButtonLeftPressed(tt.Start.X, tt.Start.Y)
-			flex.handleMouseButtonLeftReleased(tt.End.X, tt.End.Y)
+			flex.handleMouseButtonLeftPressed(nil, tt.Start.X, tt.Start.Y)
+			flex.handleMouseButtonLeftReleased(nil, tt.End.X, tt.End.Y)
 
-			assert.Equal(t, tt.Want, result{h.IsPressed, h.IsReleased, h.IsCancel})
+			assert.Equal(t, tt.Want, result{h.IsClickPressed, h.IsClickReleased, h.IsCancel})
 		})
 	}
 }
@@ -257,7 +256,7 @@ func testMouseMove(t *testing.T, flex *View, h *mockHandler, frame image.Rectang
 		t.Run(tt.Scenario, func(t *testing.T) {
 			h.Init()
 
-			flex.handleMouse(tt.Point.X, tt.Point.Y)
+			flex.handleMouse(nil, tt.Point.X, tt.Point.Y)
 
 			assert.Equal(t, tt.Want, result{h.IsMouseMoved, h.MousePoint})
 		})
@@ -317,9 +316,9 @@ func testSwipe(t *testing.T, flex *View, h *mockHandler, frame image.Rectangle) 
 		t.Run(tt.Scenario, func(t *testing.T) {
 			h.Init()
 
-			flex.HandleJustPressedTouchID(0, tt.From.X, tt.From.Y)
+			flex.HandleJustPressedTouchID(nil, 0, tt.From.X, tt.From.Y)
 			<-time.After(tt.Time)
-			flex.HandleJustReleasedTouchID(0, tt.To.X, tt.To.Y)
+			flex.HandleJustReleasedTouchID(nil, 0, tt.To.X, tt.To.Y)
 			if tt.Want.IsSwiped {
 				assert.Equal(t, tt.Want, result{h.IsSwiped, h.SwipeDir})
 			} else {
@@ -339,13 +338,15 @@ type mockHandler struct {
 }
 
 type mockFlags struct {
-	IsPressed    bool
-	IsReleased   bool
-	IsCancel     bool
-	IsUpdated    bool
-	IsDrawn      bool
-	IsMouseMoved bool
-	IsSwiped     bool
+	IsPressed       bool
+	IsReleased      bool
+	IsCancel        bool
+	IsUpdated       bool
+	IsDrawn         bool
+	IsClickPressed  bool
+	IsClickReleased bool
+	IsMouseMoved    bool
+	IsSwiped        bool
 }
 
 func NewMockHandler() *mockHandler {
@@ -358,10 +359,11 @@ func NewMockHandler() *mockHandler {
 		h.Frame = frame
 		h.IsDrawn = true
 	}
-	h.ViewHandler.Press = func(x, y int, t ebiten.TouchID) {
+	h.ViewHandler.JustPressedTouchID = func(t ebiten.TouchID, x, y int) bool {
 		h.IsPressed = true
+		return true
 	}
-	h.ViewHandler.Release = func(x, y int, isCancel bool) {
+	h.ViewHandler.JustReleasedTouchID = func(t ebiten.TouchID, x, y int, isCancel bool) {
 		h.IsReleased = true
 		h.IsCancel = isCancel
 	}
@@ -371,9 +373,18 @@ func NewMockHandler() *mockHandler {
 		return true
 	}
 	h.ViewHandler.Swipe = func(dir SwipeDirection) {
-		log.Println("swipe", dir)
 		h.IsSwiped = true
 		h.SwipeDir = dir
+	}
+	h.ViewHandler.JustPressedMouseButtonLeft = func(frame image.Rectangle, x, y int) bool {
+		h.IsClickPressed = true
+		return true
+	}
+	h.ViewHandler.JustReleasedMouseButtonLeft = func(frame image.Rectangle, x, y int) {
+		h.IsClickReleased = true
+		if !isInside(&frame, x, y) {
+			h.IsCancel = true
+		}
 	}
 	h.ViewHandler.Extra = h
 	return h

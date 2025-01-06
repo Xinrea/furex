@@ -144,7 +144,8 @@ func TestAbsolutePos(t *testing.T) {
 
 	mock := NewMockHandler()
 
-	f1.AddChild(&View{Attrs: ViewAttrs{Width: 30, Height: 40}, Handler: mock.ViewHandler})
+	f2 := &View{Attrs: ViewAttrs{Width: 30, Height: 40}, Handler: mock.ViewHandler}
+	f1.AddChild(f2)
 	f1.Update()
 	f1.Draw(nil)
 
@@ -152,7 +153,7 @@ func TestAbsolutePos(t *testing.T) {
 	//  ┌───────────────────────────────────┐
 	//  │                                   │
 	//  │                                   │
-	//  │         (100,50)                  │
+	//  │         (20, 30)    (100,200)     │
 	//  │           ┌───────────────────────┤
 	//  │           │ flex                  │
 	//  │           │                       │
@@ -580,6 +581,7 @@ func TestAutoExpanding(t *testing.T) {
 func TestNestedChildrenGrow(t *testing.T) {
 	flex := &View{
 		Attrs: ViewAttrs{
+			ID:         "main",
 			Width:      1000,
 			Height:     1000,
 			Direction:  Row,
@@ -590,6 +592,7 @@ func TestNestedChildrenGrow(t *testing.T) {
 
 	child := &View{
 		Attrs: ViewAttrs{
+			ID:         "child1",
 			Direction:  Column,
 			Justify:    JustifyCenter,
 			AlignItems: AlignItemStretch,
@@ -601,6 +604,7 @@ func TestNestedChildrenGrow(t *testing.T) {
 
 	child2 := &View{
 		Attrs: ViewAttrs{
+			ID:         "child2",
 			Direction:  Row,
 			Justify:    JustifyCenter,
 			AlignItems: AlignItemStretch,

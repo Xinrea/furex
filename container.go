@@ -103,7 +103,7 @@ func (ct *View) HandleJustReleasedTouchID(layoutFrame *image.Rectangle, touchID 
 	if layoutFrame == nil {
 		layoutFrame = &ct.frame
 	}
-	ct.checkSwipeHandlerEnd(layoutFrame, touchID, x, y)
+	ct.checkSwipeHandlerEnd(touchID, x, y)
 	if ct.Status.handledTouchID == touchID {
 		ct.Handler.HandleJustReleasedTouchID(touchID, x, y, !isInside(layoutFrame, x, y))
 		ct.Status.handledTouchID = -1

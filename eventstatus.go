@@ -36,7 +36,7 @@ func (c *View) checkSwipeHandlerStart(frame *image.Rectangle, touchID ebiten.Tou
 	return false
 }
 
-func (c *View) checkSwipeHandlerEnd(frame *image.Rectangle, touchID ebiten.TouchID, x, y int) bool {
+func (c *View) checkSwipeHandlerEnd(touchID ebiten.TouchID, x, y int) bool {
 	if c.Handler.Swipe != nil {
 		if c.Status.swipeTouchID != touchID {
 			return false

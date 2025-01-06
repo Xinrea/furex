@@ -482,20 +482,19 @@ func TestMultiMarginedWrapRowItems(t *testing.T) {
 	}
 
 	mocks := [4]*mockHandler{}
-	view := View{
-		Attrs: ViewAttrs{
-			Width:      85,
-			Height:     85,
-			MarginTop:  10,
-			MarginLeft: 10,
-		},
-	}
 
 	for i := 0; i < 4; i++ {
 		mocks[i] = NewMockHandler()
-		v := view
+		v := &View{
+			Attrs: ViewAttrs{
+				Width:      85,
+				Height:     85,
+				MarginTop:  10,
+				MarginLeft: 10,
+			},
+		}
 		v.Handler = mocks[i].ViewHandler
-		flex.AddChild(&v)
+		flex.AddChild(v)
 	}
 
 	flex.Update()

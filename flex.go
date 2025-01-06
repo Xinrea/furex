@@ -805,17 +805,6 @@ func (f *View) flexBaseSize(c *View) int {
 	return f.mainSize(w, h)
 }
 
-func (f *View) clampSize(size, width, height int) int {
-	minSize := f.mainSize(width, height)
-	if minSize > size {
-		size = minSize
-	}
-	if size < 0 {
-		return 0
-	}
-	return size
-}
-
 func round(f float64) int {
 	return int(math.Floor(f + .5))
 }

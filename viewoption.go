@@ -138,8 +138,21 @@ type HandlerProvider interface {
 	Handler() ViewHandler
 }
 
-func Handler(h HandlerProvider) ViewOption {
+// Handler sets the handler for the view, it accepts a ViewHandler or a HandlerProvider.
+// If a HandlerProvider is provided, it will call Handler() to get the ViewHandler.
+// If a ViewHandler is provided, it will set the handler directly.
+// If neither is provided, it will panic.
+//
+// Interface constraints cannot set in Go (cannot union types with behavioral interface, https://github.com/golang/go/issues/49054), so it is up to the caller to provide the correct type.
+func Handler(h any) ViewOption {
 	return func(v *View) {
-		v.Handler = h.Handler()
+		switch handler := h.(type) {
+		case ViewHandler:
+			v.Handler = handler
+		case HandlerProvider:
+			v.Handler = handler.Handler()
+		default:
+			panic("invalid handler type")
+		}
 	}
 }

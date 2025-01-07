@@ -146,6 +146,26 @@ func (v *View) AddTo(parent *View) *View {
 	return v
 }
 
+// ReplaceWith replaces this view with another view in position
+func (v *View) ReplaceWith(view *View) {
+	if !v.hasParent {
+		panic("cannot replace this view, has no parent")
+	}
+	v.parent.replaceChild(v, view)
+}
+
+func (v *View) replaceChild(old, new *View) {
+	for i, child := range v.children {
+		if child == old {
+			new.parent = v
+			new.hasParent = true
+			v.children[i] = new
+			v.isDirty = true
+			return
+		}
+	}
+}
+
 // AddChild adds one or multiple child views
 func (v *View) AddChild(views ...*View) *View {
 	for _, vv := range views {

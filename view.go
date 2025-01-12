@@ -308,68 +308,90 @@ func (v *View) FilterByTagName(tagName string) []*View {
 
 // SetLeft sets the left position of the view.
 func (v *View) SetLeft(left int) {
-	v.Attrs.Left = left
-	v.Layout()
+	if left != v.Attrs.Left {
+		v.Attrs.Left = left
+		v.Layout()
+	}
 }
 
 // SetRight sets the right position of the view.
 func (v *View) SetRight(right int) {
-	v.Attrs.Right = Int(right)
-	v.Layout()
+	if v.Attrs.Right == nil || *v.Attrs.Right != right {
+		v.Attrs.Right = Int(right)
+		v.Layout()
+	}
 }
 
 // SetTop sets the top position of the view.
 func (v *View) SetTop(top int) {
-	v.Attrs.Top = top
-	v.Layout()
+	if top != v.Attrs.Top {
+		v.Attrs.Top = top
+		v.Layout()
+	}
 }
 
 // SetBottom sets the bottom position of the view.
 func (v *View) SetBottom(bottom int) {
-	v.Attrs.Bottom = Int(bottom)
-	v.Layout()
+	if v.Attrs.Bottom == nil || *v.Attrs.Bottom != bottom {
+		v.Attrs.Bottom = Int(bottom)
+		v.Layout()
+	}
 }
 
 // SetWidth sets the width of the view.
 func (v *View) SetWidth(width int) {
-	v.Attrs.Width = width
-	v.Layout()
+	if width != v.Attrs.Width {
+		v.Attrs.Width = width
+		v.Layout()
+	}
 }
 
 // SetHeight sets the height of the view.
 func (v *View) SetHeight(height int) {
-	v.Attrs.Height = height
-	v.Layout()
+	if height != v.Attrs.Height {
+		v.Attrs.Height = height
+		v.Layout()
+	}
 }
 
 // SetMarginLeft sets the left margin of the view.
 func (v *View) SetMarginLeft(marginLeft int) {
-	v.Attrs.MarginLeft = marginLeft
-	v.Layout()
+	if marginLeft != v.Attrs.MarginLeft {
+		v.Attrs.MarginLeft = marginLeft
+		v.Layout()
+	}
 }
 
 // SetMarginTop sets the top margin of the view.
 func (v *View) SetMarginTop(marginTop int) {
-	v.Attrs.MarginTop = marginTop
-	v.Layout()
+	if marginTop != v.Attrs.MarginTop {
+		v.Attrs.MarginTop = marginTop
+		v.Layout()
+	}
 }
 
 // SetMarginRight sets the right margin of the view.
 func (v *View) SetMarginRight(marginRight int) {
-	v.Attrs.MarginRight = marginRight
-	v.Layout()
+	if marginRight != v.Attrs.MarginRight {
+		v.Attrs.MarginRight = marginRight
+		v.Layout()
+	}
 }
 
 // SetMarginBottom sets the bottom margin of the view.
 func (v *View) SetMarginBottom(marginBottom int) {
-	v.Attrs.MarginBottom = marginBottom
-	v.Layout()
+	if marginBottom != v.Attrs.MarginBottom {
+		v.Attrs.MarginBottom = marginBottom
+		v.Layout()
+	}
 }
 
 // SetPosition sets the position of the view.
 func (v *View) SetPosition(position FlexPosition) {
-	v.Attrs.Position = position
-	v.Layout()
+	if position != v.Attrs.Position {
+		v.Attrs.Position = position
+		v.Layout()
+	}
 }
 
 func (v *View) IsAbsolute() bool {
@@ -378,56 +400,74 @@ func (v *View) IsAbsolute() bool {
 
 // SetDirection sets the direction of the view.
 func (v *View) SetDirection(direction FlexDirection) {
-	v.Attrs.Direction = direction
-	v.Layout()
+	if direction != v.Attrs.Direction {
+		v.Attrs.Direction = direction
+		v.Layout()
+	}
 }
 
 // SetWrap sets the wrap property of the view.
 func (v *View) SetWrap(wrap FlexWrap) {
-	v.Attrs.Wrap = wrap
-	v.Layout()
+	if wrap != v.Attrs.Wrap {
+		v.Attrs.Wrap = wrap
+		v.Layout()
+	}
 }
 
 // SetJustify sets the justify property of the view.
 func (v *View) SetJustify(justify FlexJustify) {
-	v.Attrs.Justify = justify
-	v.Layout()
+	if justify != v.Attrs.Justify {
+		v.Attrs.Justify = justify
+		v.Layout()
+	}
 }
 
 // SetAlignItems sets the align items property of the view.
 func (v *View) SetAlignItems(alignItems FlexAlignItem) {
-	v.Attrs.AlignItems = alignItems
-	v.Layout()
+	if alignItems != v.Attrs.AlignItems {
+		v.Attrs.AlignItems = alignItems
+		v.Layout()
+	}
 }
 
 // SetAlignContent sets the align content property of the view.
 func (v *View) SetAlignContent(alignContent FlexAlignContent) {
-	v.Attrs.AlignContent = alignContent
-	v.Layout()
+	if alignContent != v.Attrs.AlignContent {
+		v.Attrs.AlignContent = alignContent
+		v.Layout()
+	}
 }
 
 // SetGrow sets the grow property of the view.
 func (v *View) SetGrow(grow float64) {
-	v.Attrs.Grow = grow
-	v.Layout()
+	if grow != v.Attrs.Grow {
+		v.Attrs.Grow = grow
+		v.Layout()
+	}
 }
 
 // SetShrink sets the shrink property of the view.
 func (v *View) SetShrink(shrink float64) {
-	v.Attrs.Shrink = shrink
-	v.Layout()
+	if shrink != v.Attrs.Shrink {
+		v.Attrs.Shrink = shrink
+		v.Layout()
+	}
 }
 
 // SetDisplay sets the display property of the view.
 func (v *View) SetDisplay(display FlexDisplay) {
-	v.Attrs.Display = display
-	v.Layout()
+	if display != v.Attrs.Display {
+		v.Attrs.Display = display
+		v.Layout()
+	}
 }
 
 // SetHidden sets the hidden property of the view.
 func (v *View) SetHidden(hidden bool) {
-	v.Attrs.Hidden = hidden
-	v.Layout()
+	if hidden == v.Attrs.Hidden {
+		v.Attrs.Hidden = hidden
+		v.Layout()
+	}
 }
 
 func (v *View) Config() ViewConfig {
